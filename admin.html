@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel Data — Armada</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0d0b0c" />
+  <link rel="icon" href="assets/img/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --yellow: #f5e400; --red: #c4141f; --ink: #0d0b0c; --ink-2: #1a1718; --cream: #f6f3ec; --cream-2: #ece7dc;
+      --line: rgba(13, 11, 12, 0.12); --muted: #6b655e; --ok: #1d9a52; --warn: #b26a00;
+      --font: "Montserrat", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--cream); color: var(--ink); line-height: 1.5; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 20px; background: var(--ink); color: #fff; }
+    .top h1 { font-size: 1rem; font-weight: 800; margin: 0; flex: 1; display: flex; align-items: center; gap: 10px; }
+    .top h1 svg { width: 22px; height: 22px; }
+    .top h1 small { font-weight: 600; color: #a39d95; font-size: 0.78rem; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 0; font-weight: 700; font-size: 0.86rem; background: rgba(255, 255, 255, 0.1); color: #fff; }
+    .btn:hover { background: rgba(255, 255, 255, 0.18); }
+    .btn-y { background: var(--yellow); color: var(--ink); }
+    .btn-y:hover { background: #fff04a; }
+    .btn-s { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .btn-s:hover { background: var(--cream-2); }
+    .btn-d { background: transparent; color: var(--red); border: 1px solid rgba(196, 20, 31, 0.3); }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 22px 16px 80px; }
+    .intro { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; margin-bottom: 18px; }
+    .intro b { display: block; margin-bottom: 6px; }
+    .intro ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 0.9rem; }
+    .intro p { margin: 10px 0 0; font-size: 0.82rem; color: var(--muted); }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none; }
+    .tab { flex: none; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 700; font-size: 0.86rem; }
+    .tab[aria-selected="true"] { background: var(--ink); color: var(--yellow); border-color: var(--ink); }
+    .tab sup { font-size: 0.7em; opacity: 0.6; margin-left: 3px; }
+    .panel { display: none; }
+    .panel.on { display: block; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 18px; margin-bottom: 12px; overflow: hidden; }
+    .card > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; font-weight: 800; }
+    .card > summary::-webkit-details-marker { display: none; }
+    .card > summary .num { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--cream-2); font-size: 0.78rem; flex: none; }
+    .card > summary .ttl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card > summary .meta { font-size: 0.76rem; color: var(--muted); font-weight: 600; }
+    .card[open] > summary { border-bottom: 1px solid var(--line); }
+    .tools { display: flex; gap: 4px; }
+    .ib { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: #fff; display: grid; place-items: center; font-weight: 800; font-size: 0.9rem; }
+    .ib:hover { background: var(--cream-2); }
+    .ib.del { color: var(--red); }
+    .body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+    .f { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .f.full { grid-column: 1 / -1; }
+    .f label { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .f small { font-size: 0.74rem; color: var(--muted); }
+    .f input[type=text], .f input[type=time], .f select, .f textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--cream); outline: none; font-size: 0.92rem; }
+    .f textarea { min-height: 78px; resize: vertical; }
+    .f input:focus, .f select:focus, .f textarea:focus { border-color: var(--ink); background: #fff; }
+    .days { display: flex; flex-wrap: wrap; gap: 6px; }
+    .days label { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 999px; border: 1px solid var(--line); text-transform: none; letter-spacing: 0; font-size: 0.82rem; color: var(--ink); background: var(--cream); cursor: pointer; }
+    .radios { display: flex; gap: 6px; flex-wrap: wrap; }
+    .radios label { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 999px; border: 1px solid var(--line); font-size: 0.82rem; text-transform: none; letter-spacing: 0; color: var(--ink); cursor: pointer; }
+    .specs { display: grid; gap: 6px; }
+    .spec { display: grid; grid-template-columns: 0.6fr 1.4fr 32px; gap: 6px; }
+    .spec input { padding: 9px 10px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--cream); outline: none; min-width: 0; }
+    .addrow { justify-self: start; margin-top: 4px; padding: 7px 12px; border-radius: 999px; border: 1px dashed var(--line); background: none; font-weight: 700; font-size: 0.8rem; }
+    .thumb { width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; background: var(--cream-2) center / cover no-repeat; display: grid; place-items: center; color: var(--muted); font-size: 0.78rem; font-weight: 700; text-align: center; padding: 10px; }
+    .add { width: 100%; padding: 14px; border-radius: 16px; border: 2px dashed var(--line); background: none; font-weight: 800; color: var(--muted); }
+    .add:hover { border-color: var(--ink); color: var(--ink); }
+    .warns { display: grid; gap: 6px; margin-bottom: 12px; }
+    .warn { padding: 10px 14px; border-radius: 12px; background: #fff4dc; color: var(--warn); font-size: 0.84rem; font-weight: 700; }
+    .okmsg { padding: 10px 14px; border-radius: 12px; background: #e3f6ea; color: var(--ok); font-size: 0.84rem; font-weight: 700; }
+    .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); opacity: 0; padding: 12px 18px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 700; font-size: 0.86rem; transition: all 0.3s; pointer-events: none; z-index: 20; }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+    .draft { font-size: 0.76rem; color: #a39d95; }
+    @media (max-width: 640px) {
+      .body { grid-template-columns: 1fr; }
+      .top { padding: 10px 12px; }
+      .top .btn span { display: none; }
+      .spec { grid-template-columns: 1fr 1fr 32px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z" fill="#B5141D"/><path d="M50 4L61 68L2 96z" fill="#DA1C24"/><path d="M50 4L98 96L61 68z" fill="#8A0D16"/></svg> Panel Data Website <small id="draftInfo" class="draft"></small></h1>
+    <button class="btn" id="resetBtn" type="button" title="Buang perubahan & kembali ke data asli">↺ <span>Reset</span></button>
+    <button class="btn" id="copyBtn" type="button">⧉ <span>Salin</span></button>
+    <a class="btn" href="index.html" target="_blank" rel="noopener">↗ <span>Lihat website</span></a>
+    <button class="btn btn-y" id="dlBtn" type="button">⬇ Unduh data.js</button>
+  </header>
+
+  <main class="wrap">
+    <div class="intro">
+      <b>Cara pakai</b>
+      <ol>
+        <li>Ubah data di bawah ini. Perubahan tersimpan otomatis sebagai draf di browser ini.</li>
+        <li>Klik <b style="display:inline">Unduh data.js</b>.</li>
+        <li>Ganti file <code>assets/js/data.js</code> dengan file hasil unduhan, lalu upload/push ke hosting.</li>
+      </ol>
+      <p>Untuk foto: simpan file foto di <code>assets/img/portfolio/</code> atau <code>assets/img/products/</code>, lalu tulis nama filenya di kolom "File foto".</p>
+    </div>
+
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <section id="panels"></section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script>
+  (() => {
+    "use strict";
+    const clone = (o) => JSON.parse(JSON.stringify(o === undefined ? null : o));
+    const ORIGINAL = {
+      SITE: clone(window.SITE || {}), PRODUCTS: clone(window.PRODUCTS || []), PORTFOLIO: clone(window.PORTFOLIO || []),
+      WHY: clone(window.WHY || []), FAQ: clone(window.FAQ || []), TESTIMONI: clone(window.TESTIMONI || []),
+    };
+    const KEY = "armada-admin-draft";
+    let D = clone(ORIGINAL);
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (saved && saved.SITE) { D = Object.assign(clone(ORIGINAL), saved); }
+    } catch (e) {}
+
+    const CATS = ["Neon Box", "Huruf Timbul", "Neon Flex", "Billboard", "Pylon", "Fasad ACP", "Indoor", "Branding"];
+    const ICONS = [["box", "Kotak"], ["type", "Huruf"], ["spark", "Neon"], ["board", "Billboard"], ["pylon", "Pylon"], ["layers", "Panel"], ["door", "Pintu"], ["car", "Mobil"]];
+    const WHY_ICONS = [["pen", "Pena"], ["tool", "Alat"], ["shield", "Perisai"], ["pin", "Lokasi"], ["chat", "Chat"], ["clock", "Jam"]];
+    const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+    function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 2200); }
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(D)); $("#draftInfo").textContent = "· draf tersimpan " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }); } catch (e) {}
+    }
+    const getPath = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), D);
+    function setPath(path, val) {
+      const ks = path.split(".");
+      const last = ks.pop();
+      const obj = ks.reduce((o, k) => o[k], D);
+      obj[last] = val;
+    }
+    const slug = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "produk";
+
+    /* ---------- field builders ---------- */
+    const fText = (path, label, opts = {}) =>
+      '<div class="f' + (opts.full ? " full" : "") + '"><label>' + esc(label) + '</label><input type="text" data-path="' + path + '" value="' + esc(getPath(path)) + '" placeholder="' + esc(opts.ph || "") + '" />' + (opts.help ? "<small>" + esc(opts.help) + "</small>" : "") + "</div>";
+    const fArea = (path, label, opts = {}) =>
+      '<div class="f full"><label>' + esc(label) + '</label><textarea data-path="' + path + '" placeholder="' + esc(opts.ph || "") + '">' + esc(getPath(path)) + "</textarea></div>";
+    const fSelect = (path, label, options, opts = {}) => {
+      const v = getPath(path);
+      const list = options.map((o) => (Array.isArray(o) ? o : [o, o]));
+      if (v && !list.some(([x]) => x === v)) list.push([v, v]);
+      return '<div class="f' + (opts.full ? " full" : "") + '"><label>' + esc(label) + '</label><select data-path="' + path + '">' + list.map(([x, l]) => '<option value="' + esc(x) + '"' + (x === v ? " selected" : "") + ">" + esc(l) + "</option>").join("") + "</select></div>";
+    };
+    const fTags = (path, label) =>
+      '<div class="f full"><label>' + esc(label) + '</label><input type="text" data-tags="' + path + '" value="' + esc((getPath(path) || []).join(", ")) + '" /><small>Pisahkan dengan koma.</small></div>';
+    const fSpecs = (path) => {
+      const rows = getPath(path) || [];
+      return '<div class="f full"><label>Spesifikasi</label><div class="specs">' +
+        rows.map((r, k) => '<div class="spec"><input type="text" data-path="' + path + "." + k + '.0" value="' + esc(r[0]) + '" placeholder="Nama (mis. Bahan)" /><input type="text" data-path="' + path + "." + k + '.1" value="' + esc(r[1]) + '" placeholder="Isi" /><button type="button" class="ib del" data-spec-del="' + path + "|" + k + '" aria-label="Hapus baris">×</button></div>').join("") +
+        '</div><button type="button" class="addrow" data-spec-add="' + path + '">+ Tambah baris</button></div>';
+    };
+    const thumb = (src) => '<div class="thumb" style="background-image:url(\'' + esc(src) + '\')" data-thumb="' + esc(src) + '">Foto belum ada<br/>(tampil ilustrasi)</div>';
+
+    /* ---------- panels ---------- */
+    function warnsHTML() {
+      const s = D.SITE;
+      const warns = [];
+      if (!/^62\d{8,13}$/.test(s.whatsapp || "")) warns.push("Nomor WhatsApp harus format 62xxxxxxxxxx (tanpa +, tanpa 0 di depan).");
+      if (s.whatsapp === "6281234567890") warns.push("Nomor WhatsApp masih nomor contoh, jadi semua tombol WA belum mengarah ke nomor asli.");
+      if (!s.address || /Anda di sini/i.test(s.address)) warns.push("Alamat workshop belum diisi.");
+      return warns.length ? warns.map((w) => '<div class="warn">⚠ ' + esc(w) + "</div>").join("") : '<div class="okmsg">✓ Info utama sudah lengkap.</div>';
+    }
+    function panelSite() {
+      const s = D.SITE;
+      const days = s.openDays || [];
+      return '<div class="warns" id="warns">' + warnsHTML() + "</div>" +
+        '<div class="card"><div class="body">' +
+        fText("SITE.whatsapp", "Nomor WhatsApp", { ph: "6281234567890", help: "Contoh: 0812-3456-7890 → 6281234567890" }) +
+        fText("SITE.instagramHandle", "Instagram (handle)", { ph: "@dazpro.adv" }) +
+        fText("SITE.instagram", "Link Instagram", { full: true }) +
+        fText("SITE.address", "Alamat workshop", { full: true }) +
+        fText("SITE.mapsUrl", "Link Google Maps (tombol Rute)", { full: true, help: "Opsional. Buka Google Maps → Bagikan → Salin link." }) +
+        fText("SITE.mapsEmbed", "Link embed peta", { full: true, help: "Opsional. Google Maps → Bagikan → Sematkan peta → salin isi src=\"...\" (harus diawali https://www.google.com/maps/embed?)." }) +
+        fText("SITE.email", "Email (opsional)") +
+        fText("SITE.hours", "Jam buka (teks)", { ph: "Senin – Sabtu, 08.00 – 17.00" }) +
+        '<div class="f full"><label>Hari buka (untuk status Buka/Tutup)</label><div class="days">' +
+        DAYS.map((d, k) => '<label><input type="checkbox" data-day="' + k + '"' + (days.includes(k) ? " checked" : "") + " /> " + d + "</label>").join("") + "</div></div>" +
+        '<div class="f"><label>Jam buka</label><input type="time" data-path="SITE.openTime" value="' + esc(s.openTime || "08:00") + '" /></div>' +
+        '<div class="f"><label>Jam tutup</label><input type="time" data-path="SITE.closeTime" value="' + esc(s.closeTime || "17:00") + '" /></div>' +
+        fSelect("SITE.timezone", "Zona waktu", [["Asia/Jakarta", "WIB (Asia/Jakarta)"], ["Asia/Makassar", "WITA (Asia/Makassar)"], ["Asia/Jayapura", "WIT (Asia/Jayapura)"]]) +
+        "</div></div>";
+    }
+    const listControls = (coll, i, n) =>
+      '<span class="tools"><button type="button" class="ib" data-mv="' + coll + "|" + i + '|-1"' + (i === 0 ? " disabled" : "") + ' aria-label="Naik">↑</button><button type="button" class="ib" data-mv="' + coll + "|" + i + '|1"' + (i === n - 1 ? " disabled" : "") + ' aria-label="Turun">↓</button><button type="button" class="ib del" data-del="' + coll + "|" + i + '" aria-label="Hapus">×</button></span>';
+
+    function panelProducts() {
+      return D.PRODUCTS.map((p, i) => {
+        const b = "PRODUCTS." + i;
+        return '<details class="card"' + (openCards.has(b) ? " open" : "") + ' data-card="' + b + '"><summary><span class="num">' + (i + 1) + '</span><span class="ttl">' + esc(p.name || "(tanpa nama)") + '</span><span class="meta">' + esc(p.category || "") + "</span>" + listControls("PRODUCTS", i, D.PRODUCTS.length) + "</summary>" +
+          '<div class="body">' + fText(b + ".name", "Nama produk") + fText(b + ".tagline", "Tagline singkat") +
+          fSelect(b + ".category", "Kategori (untuk ilustrasi & karya terkait)", CATS) + fSelect(b + ".icon", "Ikon", ICONS) +
+          fText(b + ".startPrice", "Harga mulai (opsional)", { ph: "Rp 350.000 / m²" }) + fText(b + ".badge", "Badge (opsional)", { ph: "Terlaris" }) +
+          fArea(b + ".desc", "Deskripsi") + fSpecs(b + ".specs") + fTags(b + ".uses", "Cocok untuk") +
+          fText(b + ".image", "File foto", { full: true, help: "Contoh: assets/img/products/neon-box.jpg" }) +
+          fText(b + ".id", "ID (untuk link)", { help: "Huruf kecil & tanda minus, contoh: neon-box" }) +
+          "</div></details>";
+      }).join("") + '<button type="button" class="add" data-add="PRODUCTS">+ Tambah produk</button>';
+    }
+    function panelPortfolio() {
+      return D.PORTFOLIO.map((w, i) => {
+        const b = "PORTFOLIO." + i;
+        const size = w.featured ? "featured" : w.wide ? "wide" : "normal";
+        return '<details class="card"' + (openCards.has(b) ? " open" : "") + ' data-card="' + b + '"><summary><span class="num">' + (i + 1) + '</span><span class="ttl">' + esc(w.title || "(tanpa judul)") + '</span><span class="meta">' + esc(w.category || "") + "</span>" + listControls("PORTFOLIO", i, D.PORTFOLIO.length) + "</summary>" +
+          '<div class="body"><div class="f">' + thumb(w.image) + "</div><div class=\"f\" style=\"gap:12px\">" +
+          fText(b + ".title", "Judul") + fSelect(b + ".category", "Kategori", CATS) + fText(b + ".place", "Lokasi / jenis tempat") + "</div>" +
+          fText(b + ".image", "File foto (sesudah)", { full: true, help: "Contoh: assets/img/portfolio/p1.jpg" }) +
+          fText(b + ".before", "File foto sebelum (opsional)", { full: true, help: "Kalau diisi, muncul tombol Sebelum/Sesudah di lightbox." }) +
+          '<div class="f full"><label>Ukuran kartu</label><div class="radios">' +
+          [["normal", "Biasa"], ["wide", "Lebar"], ["featured", "Besar"]].map(([v, l]) => '<label><input type="radio" name="sz' + i + '" data-size="' + i + '" value="' + v + '"' + (size === v ? " checked" : "") + " /> " + l + "</label>").join("") +
+          "</div></div></div></details>";
+      }).join("") + '<button type="button" class="add" data-add="PORTFOLIO">+ Tambah karya</button>';
+    }
+    function panelSimple(coll, fields, titleKey) {
+      return D[coll].map((it, i) => {
+        const b = coll + "." + i;
+        return '<details class="card"' + (openCards.has(b) ? " open" : "") + ' data-card="' + b + '"><summary><span class="num">' + (i + 1) + '</span><span class="ttl">' + esc(it[titleKey] || "(kosong)") + "</span>" + listControls(coll, i, D[coll].length) + "</summary>" +
+          '<div class="body">' + fields(b) + "</div></details>";
+      }).join("") + '<button type="button" class="add" data-add="' + coll + '">+ Tambah</button>';
+    }
+
+    const TABS = [
+      ["site", "Info Usaha", () => panelSite(), null],
+      ["products", "Produk", () => panelProducts(), "PRODUCTS"],
+      ["portfolio", "Portofolio", () => panelPortfolio(), "PORTFOLIO"],
+      ["why", "Keunggulan", () => panelSimple("WHY", (b) => fText(b + ".title", "Judul") + fSelect(b + ".icon", "Ikon", WHY_ICONS) + fArea(b + ".text", "Teks"), "title"), "WHY"],
+      ["faq", "FAQ", () => panelSimple("FAQ", (b) => fText(b + ".q", "Pertanyaan", { full: true }) + fArea(b + ".a", "Jawaban"), "q"), "FAQ"],
+      ["testi", "Testimoni", () => '<div class="intro" style="margin-bottom:12px"><b>Testimoni asli dari klien</b><p style="margin:0">Section testimoni di website baru muncul kalau ada minimal 1 testimoni. Gunakan testimoni asli dan minta izin klien.</p></div>' +
+        panelSimple("TESTIMONI", (b) => fText(b + ".name", "Nama") + fText(b + ".business", "Nama usaha") + fSelect(b + ".product", "Produk", [""].concat(D.PRODUCTS.map((p) => p.name))) + fSelect(b + ".rating", "Rating", [[5, "★★★★★"], [4, "★★★★"], [3, "★★★"]].map(([v, l]) => [String(v), l])) + fArea(b + ".text", "Isi testimoni"), "name"), "TESTIMONI"],
+    ];
+    const DEFAULTS = {
+      PRODUCTS: () => ({ id: "produk-baru-" + Date.now().toString(36).slice(-4), category: "Neon Box", name: "Produk Baru", tagline: "", icon: "box", image: "", desc: "", specs: [["Bahan", ""]], uses: [], startPrice: "", badge: "" }),
+      PORTFOLIO: () => ({ title: "Karya Baru", category: "Neon Box", place: "", image: "assets/img/portfolio/", before: "" }),
+      WHY: () => ({ icon: "pen", title: "", text: "" }),
+      FAQ: () => ({ q: "", a: "" }),
+      TESTIMONI: () => ({ name: "", business: "", text: "", rating: "5", product: "" }),
+    };
+    let current = "site";
+    const openCards = new Set();
+
+    function renderTabs() {
+      $("#tabs").innerHTML = TABS.map(([id, label, , coll]) => '<button class="tab" role="tab" data-tab="' + id + '" aria-selected="' + (id === current) + '">' + label + (coll ? "<sup>" + D[coll].length + "</sup>" : "") + "</button>").join("");
+    }
+    function render() {
+      renderTabs();
+      const t = TABS.find((x) => x[0] === current);
+      $("#panels").innerHTML = '<div class="panel on">' + t[2]() + "</div>";
+      $$("[data-thumb]").forEach((el) => {
+        const src = el.dataset.thumb;
+        if (!src || /\/$/.test(src)) return;
+        const im = new Image();
+        im.onload = () => { el.textContent = ""; };
+        im.src = src;
+      });
+    }
+
+    /* ---------- events ---------- */
+    document.addEventListener("input", (e) => {
+      const el = e.target;
+      if (el.dataset.path) {
+        let v = el.value;
+        if (el.dataset.path === "SITE.whatsapp") v = v.replace(/[^\d]/g, "").replace(/^0/, "62");
+        setPath(el.dataset.path, v);
+        if (/\.(name|title|q|category)$/.test(el.dataset.path)) {
+          const card = el.closest("details");
+          if (card) {
+            const it = getPath(card.dataset.card);
+            card.querySelector(".ttl").textContent = it.name || it.title || it.q || "(kosong)";
+            const m = card.querySelector(".meta");
+            if (m && it.category) m.textContent = it.category;
+          }
+        }
+        if (el.dataset.path.startsWith("SITE.") && el.dataset.path === "SITE.whatsapp" && el.value !== v) el.value = v;
+        save();
+      } else if (el.dataset.tags) {
+        setPath(el.dataset.tags, el.value.split(",").map((x) => x.trim()).filter(Boolean));
+        save();
+      }
+    });
+    document.addEventListener("change", (e) => {
+      const el = e.target;
+      if (el.dataset.path && el.tagName === "SELECT") { setPath(el.dataset.path, el.value); save(); }
+      if (el.dataset.day) {
+        D.SITE.openDays = $$("[data-day]").filter((x) => x.checked).map((x) => +x.dataset.day);
+        save();
+      }
+      if (el.dataset.size) {
+        const w = D.PORTFOLIO[+el.dataset.size];
+        delete w.featured; delete w.wide;
+        if (el.value === "featured") w.featured = true;
+        if (el.value === "wide") w.wide = true;
+        save();
+      }
+      if (el.dataset.path === "SITE.whatsapp" || el.dataset.path === "SITE.address") { const w = $("#warns"); if (w) w.innerHTML = warnsHTML(); }
+    });
+    document.addEventListener("toggle", (e) => {
+      const d = e.target;
+      if (d.dataset && d.dataset.card) d.open ? openCards.add(d.dataset.card) : openCards.delete(d.dataset.card);
+    }, true);
+    document.addEventListener("click", (e) => {
+      const tab = e.target.closest("[data-tab]");
+      if (tab) { current = tab.dataset.tab; render(); return; }
+      const add = e.target.closest("[data-add]");
+      if (add) {
+        const c = add.dataset.add;
+        D[c].push(DEFAULTS[c]());
+        openCards.add(c + "." + (D[c].length - 1));
+        save(); render();
+        setTimeout(() => { const cards = $$("details.card"); const last = cards[cards.length - 1]; if (last) last.scrollIntoView({ behavior: "smooth", block: "center" }); }, 50);
+        return;
+      }
+      const del = e.target.closest("[data-del]");
+      if (del) {
+        e.preventDefault();
+        const [c, i] = del.dataset.del.split("|");
+        const it = D[c][+i];
+        if (!confirm('Hapus "' + (it.name || it.title || it.q || "item ini") + '"?')) return;
+        D[c].splice(+i, 1);
+        openCards.clear();
+        save(); render(); toast("Dihapus");
+        return;
+      }
+      const mv = e.target.closest("[data-mv]");
+      if (mv) {
+        e.preventDefault();
+        const [c, i, d] = mv.dataset.mv.split("|");
+        const a = +i, b2 = a + +d;
+        if (b2 < 0 || b2 >= D[c].length) return;
+        [D[c][a], D[c][b2]] = [D[c][b2], D[c][a]];
+        openCards.clear();
+        save(); render();
+        return;
+      }
+      const sa = e.target.closest("[data-spec-add]");
+      if (sa) { getPath(sa.dataset.specAdd).push(["", ""]); save(); render(); return; }
+      const sd = e.target.closest("[data-spec-del]");
+      if (sd) { const [path, k] = sd.dataset.specDel.split("|"); getPath(path).splice(+k, 1); save(); render(); return; }
+    });
+
+    /* ---------- output ---------- */
+    function buildFile() {
+      D.PRODUCTS.forEach((p) => { if (!p.id) p.id = slug(p.name); });
+      const stamp = new Date().toLocaleString("id-ID");
+      const j = (v) => JSON.stringify(v, null, 2);
+      return "/* =========================================================\n" +
+        "   DATA WEBSITE CV ARMADA ADVERTISING\n" +
+        "   Dibuat lewat admin.html pada " + stamp + ".\n" +
+        "   Bisa diedit lagi lewat admin.html atau langsung di file ini.\n" +
+        "   ========================================================= */\n\n" +
+        "window.SITE = " + j(D.SITE) + ";\n\n" +
+        "window.PRODUCTS = " + j(D.PRODUCTS) + ";\n\n" +
+        "window.PORTFOLIO = " + j(D.PORTFOLIO) + ";\n\n" +
+        "window.WHY = " + j(D.WHY) + ";\n\n" +
+        "window.FAQ = " + j(D.FAQ) + ";\n\n" +
+        "window.TESTIMONI = " + j(D.TESTIMONI.map((t) => Object.assign({}, t, { rating: +t.rating || 5 }))) + ";\n";
+    }
+    $("#dlBtn").addEventListener("click", () => {
+      const blob = new Blob([buildFile()], { type: "text/javascript" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "data.js";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      toast("data.js diunduh — ganti file assets/js/data.js dengan file ini");
+    });
+    $("#copyBtn").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(buildFile()); toast("Isi data.js disalin"); } catch (e) { toast("Gagal menyalin — pakai tombol Unduh"); }
+    });
+    $("#resetBtn").addEventListener("click", () => {
+      if (!confirm("Buang semua perubahan draf dan kembali ke data asli?")) return;
+      D = clone(ORIGINAL);
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      $("#draftInfo").textContent = "";
+      openCards.clear();
+      render();
+      toast("Kembali ke data asli");
+    });
+
+    try { if (localStorage.getItem(KEY)) $("#draftInfo").textContent = "· draf dimuat"; } catch (e) {}
+    render();
+  })();
+  </script>
+</body>
+</html>

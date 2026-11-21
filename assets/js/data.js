@@ -11,7 +11,8 @@ window.SITE = {
   instagramHandle: "@dazpro.adv",
   email: "",                 // opsional, contoh: "halo@armada-adv.com"
   address: "Alamat workshop Anda di sini",
-  mapsUrl: "",               // opsional: link Google Maps
+  mapsUrl: "",               // opsional: link Google Maps (tombol "Rute")
+  mapsEmbed: "",             // opsional: link embed peta (Google Maps > Bagikan > Sematkan peta > salin src="...")
   hours: "Senin – Sabtu, 08.00 – 17.00",
   // Untuk status "Buka sekarang / Tutup" (0 = Minggu, 1 = Senin, … 6 = Sabtu)
   openDays: [1, 2, 3, 4, 5, 6],
@@ -38,6 +39,8 @@ window.PRODUCTS = [
       ["Bentuk", "Kotak, bulat, custom, 1 atau 2 sisi"],
     ],
     uses: ["Toko", "Kafe", "Klinik", "Kantor"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "huruf-timbul",
@@ -53,6 +56,8 @@ window.PRODUCTS = [
       ["Finishing", "Mirror, hairline, cat duco"],
     ],
     uses: ["Fasad gedung", "Lobby", "Showroom"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "neon-flex",
@@ -68,6 +73,8 @@ window.PRODUCTS = [
       ["Daya", "Adaptor 12V, aman untuk indoor"],
     ],
     uses: ["Kafe", "Event", "Kamar", "Photo spot"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "billboard",
@@ -83,6 +90,8 @@ window.PRODUCTS = [
       ["Ukuran", "Custom, mulai 2×3 m"],
     ],
     uses: ["Pinggir jalan", "Event", "Properti"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "pylon",
@@ -98,6 +107,8 @@ window.PRODUCTS = [
       ["Ukuran", "Custom sesuai lokasi"],
     ],
     uses: ["Perumahan", "Dealer", "Ruko", "Mall"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "acp-fasad",
@@ -113,6 +124,8 @@ window.PRODUCTS = [
       ["Bonus", "Integrasi huruf timbul / neon box"],
     ],
     uses: ["Ruko", "Kantor", "Showroom"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "indoor",
@@ -128,6 +141,8 @@ window.PRODUCTS = [
       ["Jenis", "Door sign, wayfinding, wall logo"],
     ],
     uses: ["Kantor", "Sekolah", "Rumah sakit"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
   {
     id: "branding",
@@ -143,6 +158,8 @@ window.PRODUCTS = [
       ["Pasang", "Rapi tanpa gelembung"],
     ],
     uses: ["Mobil", "Kaca toko", "Etalase"],
+    startPrice: "",   // opsional, contoh: "Rp 350.000 / m²"
+    badge: "",        // opsional, contoh: "Terlaris" atau "Baru"
   },
 ];
 
@@ -185,3 +202,10 @@ window.FAQ = [
   { q: "Bisa pesan dalam jumlah kecil?", a: "Bisa. Dari neon flex kecil untuk dekorasi sampai billboard besar, semuanya kami layani." },
   { q: "Melayani pemasangan di luar kota?", a: "Bisa. Hubungi kami lewat WhatsApp untuk info area layanan serta biaya pengiriman dan pemasangan." },
 ];
+
+/* ---------- TESTIMONI ----------
+   Section testimoni otomatis muncul kalau daftar ini diisi.
+   Contoh:
+   { name: "Budi", business: "Kopi Senja", text: "Neon box-nya rapi dan terang!", rating: 5, product: "Neon Box" },
+*/
+window.TESTIMONI = [];

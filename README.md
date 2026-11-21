@@ -43,6 +43,23 @@ robots.txt, sitemap.xml → SEO (ganti domain!)
 - **Chat cepat WA**: tombol WhatsApp membuka popup dengan pilihan topik (tanya harga, survei lokasi, konsultasi, progres pesanan) atau tulis pesan sendiri
 - Navigasi: penanda menu aktif yang bergeser, titik navigasi section di kanan (desktop), tombol kembali ke atas
 - Di HP: header dan tab bar bersembunyi saat scroll ke bawah dan muncul lagi saat scroll ke atas
+- **Pencarian cepat**: tekan `/` atau `Ctrl/⌘ + K`, atau klik ikon cari. Bisa mencari produk, karya, FAQ, dan aksi.
+- **Foto toko sendiri di simulator**: upload foto fasad, lalu geser tulisan dan atur ukurannya (−/+). Foto tidak dikirim ke mana pun.
+- **Sebelum/Sesudah** di lightbox portofolio. Kalau foto asli dipakai, isi field `before` untuk foto sebelum.
+- **Bandingkan produk**: tombol perbandingan di detail produk, maksimal 3 produk, hasilnya tabel spesifikasi
+- **Katalog PDF**: tombol "Unduh katalog PDF" di bagian Produk (lewat jendela cetak, pilih "Simpan sebagai PDF")
+- **Harga mulai & badge** per produk (opsional, `startPrice` dan `badge` di `data.js`)
+- **Testimoni**: section otomatis muncul kalau `window.TESTIMONI` diisi
+- **Kartu lokasi**: tombol Rute ke Google Maps, dan peta tertanam kalau `mapsEmbed` diisi
+- Footer lengkap dengan link produk, plus QR code untuk membuka website di HP (desktop, khusus http/https)
+
+## Cara termudah mengedit data: Panel Admin
+Buka **`admin.html`** di browser (misalnya `http://localhost:8080/admin.html`, atau `domainanda.com/admin.html` setelah online).
+1. Edit info usaha, produk, portofolio, keunggulan, FAQ, dan testimoni lewat form. Draf tersimpan otomatis di browser.
+2. Klik **Unduh data.js**.
+3. Ganti file `assets/js/data.js` dengan file hasil unduhan, lalu upload/push.
+
+Panel ini tidak menyimpan apa pun di server; ia hanya membuat file `data.js`. Kalau tidak ingin halaman ini ikut online, cukup jangan upload `admin.html`.
 
 ## Yang WAJIB diganti dulu
 Buka `assets/js/data.js`:

@@ -2,7 +2,7 @@
    Strategi: network-first untuk file website (perubahan langsung terlihat),
    cache sebagai cadangan saat offline. Font Google: stale-while-revalidate.
    Naikkan VERSION jika ingin membersihkan cache lama. */
-const VERSION = "armada-v2";
+const VERSION = "armada-v3";
 const CORE = [
   "./",
   "index.html",
