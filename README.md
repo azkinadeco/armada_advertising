@@ -52,6 +52,11 @@ robots.txt, sitemap.xml → SEO (ganti domain!)
 - **Testimoni**: section otomatis muncul kalau `window.TESTIMONI` diisi
 - **Kartu lokasi**: tombol Rute ke Google Maps, dan peta tertanam kalau `mapsEmbed` diisi
 - Footer lengkap dengan link produk, plus QR code untuk membuka website di HP (desktop, khusus http/https)
+- **Tampilan lebih ringkas**: judul dan teks dipersingkat, label section tanpa nomor, dan tagline produk hanya muncul saat disorot
+- **Simulator bertab** (Teks · Jenis · Warna · Dinding · Ukuran), jadi panel kontrol jauh lebih pendek
+- **Kartu "Kenapa kami" bisa dibalik**: ketuk/arahkan untuk melihat detail
+- **Cara pesan jadi stepper interaktif**: berjalan otomatis, dan bisa diklik per langkah
+- Efek interaktif: tilt + kilau pada kartu (desktop), ripple saat tombol disentuh, penanda filter yang bergeser, parallax hero saat scroll, dan fokus kartu tengah + titik indikator di carousel produk (HP)
 
 ## Cara termudah mengedit data: Panel Admin
 Buka **`admin.html`** di browser (misalnya `http://localhost:8080/admin.html`, atau `domainanda.com/admin.html` setelah online).

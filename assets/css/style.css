@@ -1317,3 +1317,154 @@ main { overflow-x: clip; }
 /* compare tray: fully hidden when empty (mobile offset made it peek) */
 .cmp-tray { opacity: 0; visibility: hidden; transition: transform 0.45s var(--ease), opacity 0.3s, visibility 0.3s; }
 .cmp-tray.is-show { opacity: 1; visibility: visible; }
+
+/* =========================================================
+   BATCH 6 — simpler UI, more interaction
+   ========================================================= */
+
+/* fewer floating things */
+.dots { display: none !important; }
+
+/* ---------- hero ---------- */
+.hero-title { margin-top: 0; }
+.hero-sub { font-size: 1.15rem; color: var(--muted); font-weight: 500; }
+.hero-actions { margin-top: 30px; }
+.sign-tap { position: absolute; right: 5%; bottom: 12%; z-index: 4; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--yellow); color: var(--ink); animation: tapPulse 2s infinite; pointer-events: none; transition: opacity 0.4s, transform 0.4s var(--ease); }
+.sign-tap .i { width: 17px; height: 17px; }
+.sign.was-tapped .sign-tap { opacity: 0; transform: scale(0.4); }
+@keyframes tapPulse { 0% { box-shadow: 0 0 0 0 rgba(245, 228, 0, 0.6); } 70%, 100% { box-shadow: 0 0 0 16px rgba(245, 228, 0, 0); } }
+.hero-copy, .sign-wrap { will-change: translate; }
+
+/* ---------- section heads: tighter ---------- */
+.section-head { margin-bottom: clamp(24px, 4vw, 44px); }
+.section-title { font-size: clamp(2rem, 4.4vw, 3.4rem); }
+
+/* ---------- simulator tabs ---------- */
+.sim-controls { gap: 16px; }
+.sim-tabs { position: relative; isolation: isolate; display: flex; gap: 2px; padding: 4px; border-radius: 16px; background: var(--ink); border: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.sim-tabs::-webkit-scrollbar { display: none; }
+.sim-tab-pill { position: absolute; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: 12px; background: var(--yellow); z-index: -1; transition: transform 0.4s var(--ease), width 0.4s var(--ease); }
+.sim-tab { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 10px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; color: var(--muted); transition: color 0.25s; }
+.sim-tab .i { width: 19px; height: 19px; }
+.sim-tab.is-on { color: var(--ink); }
+.sim-panes { min-height: 132px; }
+.sim-pane { display: none; flex-direction: column; gap: 14px; }
+.sim-pane.is-on { display: flex; animation: quizIn 0.35s var(--ease); }
+.sim-pane[data-pane="jenis"] .sim-label, .sim-pane[data-pane="dinding"] > .sim-group > .sim-label { display: none; }
+.sim-pane .sim-group { margin: 0; }
+
+/* ---------- products ---------- */
+.product { transform-style: preserve-3d; }
+.product-body { padding: 16px 18px; }
+.product-tag { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.35s var(--ease), opacity 0.3s; }
+@media (hover: hover) { .product:hover .product-tag { max-height: 2.4em; opacity: 1; } }
+.car-dots { justify-content: center; gap: 6px; margin-top: 14px; }
+.car-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(13, 11, 12, 0.2); transition: width 0.3s var(--ease), background 0.3s; }
+.car-dots i.on { width: 22px; background: var(--ink); }
+
+/* ---------- why: flip tiles ---------- */
+.why { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.why-tile { position: relative; height: 230px; perspective: 1000px; border-radius: var(--radius); text-align: left; -webkit-tap-highlight-color: transparent; }
+.why-in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.7s var(--ease); }
+.why-tile.is-flipped .why-in { transform: rotateY(180deg); }
+@media (hover: hover) { .why-tile:hover .why-in { transform: rotateY(180deg); } }
+.why-front, .why-back { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 24px; border-radius: var(--radius); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.why-front { background: #fff; border: 1px solid var(--line-dark); }
+.why-tile:first-child .why-front { background: var(--ink); color: var(--text); border: 0; }
+.why-front .why-ic { margin: 0; }
+.why-front b { margin-top: auto; font-size: 1.22rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.015em; }
+.why-more { position: absolute; top: 20px; right: 20px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--cream-2); color: var(--ink); font-weight: 800; }
+.why-back { transform: rotateY(180deg); justify-content: flex-end; gap: 8px; background: var(--yellow); color: var(--ink); }
+.why-back b { font-size: 1.1rem; font-weight: 900; }
+.why-back span { font-weight: 600; font-size: 0.98rem; line-height: 1.4; }
+
+/* ---------- stepper ---------- */
+.stepper { display: grid; gap: 22px; max-width: 900px; }
+.stepper-track { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); }
+.stepper-track::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 31px; height: 3px; border-radius: 2px; background: var(--line); }
+.stepper-fill { position: absolute; left: 12.5%; top: 31px; height: 3px; width: calc(75% * var(--sp, 0)); border-radius: 2px; background: linear-gradient(90deg, var(--red-2), var(--yellow)); box-shadow: 0 0 12px rgba(245, 228, 0, 0.5); transition: width 0.6s var(--ease); }
+.stepper-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 700; color: var(--muted); transition: color 0.3s; -webkit-tap-highlight-color: transparent; }
+.stepper-node .ic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--ink-2); border: 2px solid var(--line); transition: all 0.4s var(--ease); }
+.stepper-node .ic .i { width: 24px; height: 24px; }
+.stepper-node:hover .ic { border-color: rgba(245, 228, 0, 0.5); }
+.stepper-node.is-done .ic { border-color: rgba(245, 228, 0, 0.55); color: var(--yellow); }
+.stepper-node.is-on { color: var(--text); }
+.stepper-node.is-on .ic { background: var(--yellow); border-color: var(--yellow); color: var(--ink); transform: scale(1.1); box-shadow: 0 0 0 8px rgba(245, 228, 0, 0.12); }
+.stepper-panel { display: flex; align-items: center; gap: 20px; padding: 22px 26px; border-radius: var(--radius); background: var(--ink-2); border: 1px solid var(--line); }
+.stepper-no { font-size: 2.8rem; font-weight: 900; line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(245, 228, 0, 0.6); }
+.stepper-body { flex: 1; min-width: 0; }
+.stepper-body.swap { animation: quizIn 0.4s var(--ease); }
+.stepper-body h3 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; }
+.stepper-body p { color: var(--muted); }
+
+/* ---------- portfolio: pill + glare ---------- */
+.chips { position: relative; isolation: isolate; }
+.chip-pill { position: absolute; left: 0; top: 0; z-index: -1; border-radius: 999px; background: var(--yellow); transition: transform 0.45s var(--ease), width 0.45s var(--ease); }
+#filters .chip.is-active { background: transparent; border-color: transparent; color: var(--ink); }
+.work::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(280px circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.16), transparent 60%); opacity: 0; transition: opacity 0.3s; }
+.work:hover::before { opacity: 1; }
+.work-info { z-index: 3; }
+@media (hover: hover) {
+  .work .work-cat { opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s var(--ease); }
+  .work:hover .work-cat { opacity: 1; transform: none; }
+}
+
+/* ---------- contact: compact ---------- */
+.li-hours, .li-ig { display: none !important; }
+.contact-list { margin-top: 22px; }
+.route-link { display: inline-flex; align-items: center; gap: 4px; margin-left: 10px; padding: 5px 11px; border-radius: 999px; background: var(--ink); color: var(--yellow) !important; font-size: 0.76rem; font-weight: 800; text-decoration: none !important; white-space: nowrap; }
+.route-link .i { width: 13px !important; height: 13px !important; padding: 0 !important; background: none !important; }
+
+/* ---------- tap ripple ---------- */
+.btn, .chip, .mq-item, .quiz-opt, .chat-opt, .sim-tab, .pal-item, .tabbar a:not(.tab-wa) { position: relative; overflow: hidden; }
+.ripple { position: absolute; border-radius: 50%; background: currentColor; opacity: 0.2; transform: scale(0); animation: ripple 0.6s ease-out forwards; pointer-events: none; }
+@keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+/* ---------- reveal: cards scale in ---------- */
+.product.reveal, .work.reveal, .why-tile.reveal { transform: translateY(26px) scale(0.96); }
+.product.reveal.is-visible, .work.reveal.is-visible, .why-tile.reveal.is-visible { transform: none; }
+
+/* ---------- responsive (batch 6) ---------- */
+@media (max-width: 1024px) {
+  .why { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .hero-sub { font-size: 1rem; }
+  .hero-actions { margin-top: 22px; }
+  .sign-tap { width: 30px; height: 30px; right: 4%; bottom: 10%; }
+
+  .sim-tab { font-size: 0.66rem; padding: 8px 6px 7px; }
+  .sim-tab .i { width: 18px; height: 18px; }
+  .sim-panes { min-height: 118px; }
+
+  .products .product { transition: transform 0.4s var(--ease), opacity 0.4s; }
+  .products .product.is-side { transform: scale(0.94); opacity: 0.7; }
+  .products .product.is-center { transform: none; opacity: 1; }
+  .work-cat { display: none !important; }
+
+  .why { gap: 10px; }
+  .why-tile { height: 160px; }
+  .why-front, .why-back { padding: 16px; }
+  .why-front b { font-size: 1rem; }
+  .why-more { top: 14px; right: 14px; width: 26px; height: 26px; }
+  .why-back b { font-size: 0.95rem; }
+  .why-back span { font-size: 0.85rem; }
+
+  .stepper { gap: 16px; }
+  .stepper-node { font-size: 0.72rem; gap: 8px; }
+  .stepper-node .ic { width: 50px; height: 50px; }
+  .stepper-node .ic .i { width: 20px; height: 20px; }
+  .stepper-track::before, .stepper-fill { top: 24px; }
+  .stepper-panel { padding: 16px; gap: 14px; flex-wrap: wrap; }
+  .stepper-no { font-size: 2rem; }
+  .stepper-body h3 { font-size: 1.02rem; }
+  .stepper-body p { font-size: 0.88rem; }
+  .stepper-panel .btn { width: 100%; }
+
+  .contact-list li { justify-content: center; flex-wrap: wrap; }
+}
+
+/* fixes after batch 6 */
+.chips .chip, .sim-opts .chip, .order-chips .chip { flex: none; }
+@media (max-width: 640px) { .section-aside { display: none; } }
+.mq-item, .sim-tab, .stepper-node { flex-shrink: 0; }

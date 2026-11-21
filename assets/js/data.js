@@ -187,20 +187,20 @@ window.PORTFOLIO = [
 /* ---------- KEUNGGULAN (section "Kenapa Armada") ----------
    icon: pen | tool | shield | pin | chat | clock */
 window.WHY = [
-  { icon: "pen", title: "Free desain & mockup", text: "Lihat dulu gambaran hasilnya di lokasi kamu sebelum produksi dimulai." },
-  { icon: "tool", title: "Workshop sendiri", text: "Kualitas terkontrol, harga lebih bersaing." },
-  { icon: "shield", title: "Bahan pilihan", text: "Material tahan cuaca untuk outdoor." },
-  { icon: "pin", title: "Terima pasang", text: "Tim kami datang, pasang, dan cek sampai lampu menyala." },
+  { icon: "pen", title: "Free desain & mockup", text: "Lihat mockup dulu sebelum produksi." },
+  { icon: "tool", title: "Workshop sendiri", text: "Kualitas terjaga, harga bersaing." },
+  { icon: "shield", title: "Bahan pilihan", text: "Tahan panas & hujan." },
+  { icon: "pin", title: "Terima pasang", text: "Dipasang sampai lampu menyala." },
 ];
 
 /* ---------- FAQ ----------
    Sesuaikan jawaban dengan kebijakan usaha Anda. */
 window.FAQ = [
-  { q: "Apakah desainnya gratis?", a: "Ya. Konsultasi dan mockup desain gratis, jadi kamu bisa lihat gambaran hasilnya sebelum memutuskan produksi." },
-  { q: "Bagaimana harga dihitung?", a: "Harga tergantung jenis bahan, ukuran, jenis lampu, dan tingkat kesulitan pemasangan. Kirim foto lokasi dan perkiraan ukuran lewat WhatsApp, kami buatkan penawarannya." },
-  { q: "Berapa lama pengerjaannya?", a: "Tergantung jenis produk, ukuran, dan antrean produksi. Estimasi jadwal pasti kami infokan setelah desain disetujui." },
-  { q: "Bisa pesan dalam jumlah kecil?", a: "Bisa. Dari neon flex kecil untuk dekorasi sampai billboard besar, semuanya kami layani." },
-  { q: "Melayani pemasangan di luar kota?", a: "Bisa. Hubungi kami lewat WhatsApp untuk info area layanan serta biaya pengiriman dan pemasangan." },
+  { q: "Apakah desainnya gratis?", a: "Ya, konsultasi dan mockup desain gratis." },
+  { q: "Bagaimana harga dihitung?", a: "Dari bahan, ukuran, lampu, dan pemasangan. Kirim foto lokasi via WA, kami hitungkan." },
+  { q: "Berapa lama pengerjaannya?", a: "Tergantung jenis & ukuran. Jadwal pasti diinfokan setelah desain disetujui." },
+  { q: "Bisa pesan dalam jumlah kecil?", a: "Bisa, dari neon flex kecil sampai billboard." },
+  { q: "Melayani pemasangan di luar kota?", a: "Bisa. Chat kami untuk info area & biayanya." },
 ];
 
 /* ---------- TESTIMONI ----------

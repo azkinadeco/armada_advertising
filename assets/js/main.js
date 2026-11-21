@@ -1596,6 +1596,214 @@
     qio.observe(qrCol);
   }
 
+  /* =========================================================
+     BATCH 6 — simpler UI, more interaction
+     ========================================================= */
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  /* ---------- hero: tap badge + scroll parallax ---------- */
+  sign.addEventListener("click", () => sign.classList.add("was-tapped"), { once: true });
+  const heroEl = $(".hero"), heroCopy = $(".hero-copy"), heroSignWrap = $(".sign-wrap");
+  if (heroEl && !reduced) {
+    let hTick = false;
+    const heroScroll = () => {
+      hTick = false;
+      const p = Math.min(1, Math.max(0, window.scrollY / (heroEl.offsetHeight || 1)));
+      heroCopy.style.translate = "0 " + (p * -48).toFixed(1) + "px";
+      heroCopy.style.opacity = String(1 - p * 0.75);
+      heroSignWrap.style.translate = "0 " + (p * 60).toFixed(1) + "px";
+      heroSignWrap.style.scale = String(1 - p * 0.07);
+    };
+    window.addEventListener("scroll", () => { if (!hTick) { hTick = true; requestAnimationFrame(heroScroll); } }, { passive: true });
+  }
+
+  /* ---------- simulator: tabbed controls ---------- */
+  const simCtr = $(".sim-controls");
+  if (simCtr) {
+    const grp = (sel) => { const el = $(sel); return el ? el.closest(".sim-group") : null; };
+    const PANES = [
+      ["teks", "Teks", "text", [simCtr.querySelector(".field"), grp('[data-key="font"]')]],
+      ["jenis", "Jenis", "shapes", [grp('[data-key="type"]')]],
+      ["warna", "Warna", "palette", [grp('[data-key="color"]')]],
+      ["dinding", "Dinding", "wall", [grp('[data-key="wall"]')]],
+      ["ukuran", "Ukuran", "ruler", [grp("#simDist")]],
+    ];
+    const tabs = document.createElement("div");
+    tabs.className = "sim-tabs";
+    tabs.setAttribute("role", "tablist");
+    tabs.setAttribute("aria-label", "Pengaturan simulasi");
+    tabs.innerHTML = '<span class="sim-tab-pill" aria-hidden="true"></span>' + PANES.map(([id, label, ic], k) =>
+      '<button type="button" class="sim-tab' + (k ? "" : " is-on") + '" role="tab" data-pane="' + id + '" aria-selected="' + !k + '"><svg class="i" aria-hidden="true"><use href="#i-' + ic + '"/></svg><span>' + label + "</span></button>"
+    ).join("");
+    const panesWrap = document.createElement("div");
+    panesWrap.className = "sim-panes";
+    PANES.forEach(([id, , , nodes], k) => {
+      const pane = document.createElement("div");
+      pane.className = "sim-pane" + (k ? "" : " is-on");
+      pane.dataset.pane = id;
+      pane.setAttribute("role", "tabpanel");
+      nodes.forEach((n) => n && pane.appendChild(n));
+      panesWrap.appendChild(pane);
+    });
+    const actions = simCtr.querySelector(".sim-actions");
+    simCtr.insertBefore(panesWrap, actions);
+    simCtr.insertBefore(tabs, panesWrap);
+    const pill = $(".sim-tab-pill", tabs);
+    const pillTo = (b) => { if (!b) return; pill.style.width = b.offsetWidth + "px"; pill.style.transform = "translateX(" + b.offsetLeft + "px)"; };
+    const activeTab = () => $(".sim-tab.is-on", tabs);
+    tabs.addEventListener("click", (e) => {
+      const b = e.target.closest(".sim-tab");
+      if (!b) return;
+      $$(".sim-tab", tabs).forEach((x) => { x.classList.toggle("is-on", x === b); x.setAttribute("aria-selected", String(x === b)); });
+      $$(".sim-pane", panesWrap).forEach((p) => p.classList.toggle("is-on", p.dataset.pane === b.dataset.pane));
+      pillTo(b);
+      b.scrollIntoView({ inline: "nearest", block: "nearest" });
+    });
+    requestAnimationFrame(() => pillTo(activeTab()));
+    window.addEventListener("resize", () => pillTo(activeTab()));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => pillTo(activeTab()));
+  }
+
+  /* ---------- products: tilt (desktop), centre focus + dots (mobile) ---------- */
+  const prodCards = $$(".product", productsEl);
+  if (finePointer && !reduced) {
+    prodCards.forEach((el) => {
+      el.addEventListener("pointermove", (e) => {
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = "perspective(900px) rotateX(" + (-y * 7).toFixed(2) + "deg) rotateY(" + (x * 9).toFixed(2) + "deg) translateY(-6px)";
+      });
+      el.addEventListener("pointerleave", () => { el.style.transform = ""; });
+    });
+  }
+  const prodDots = $("#prodDots");
+  if (prodDots) {
+    prodDots.innerHTML = PRODUCTS.map(() => "<i></i>").join("");
+    let pTick = false;
+    const centerFocus = () => {
+      pTick = false;
+      if (!isMobile()) { prodCards.forEach((c) => c.classList.remove("is-center", "is-side")); return; }
+      let best = 0, bd = Infinity;
+      prodCards.forEach((c, k) => {
+        const r = c.getBoundingClientRect();
+        const d = Math.abs(r.left + r.width / 2 - window.innerWidth / 2);
+        if (d < bd) { bd = d; best = k; }
+      });
+      prodCards.forEach((c, k) => { c.classList.toggle("is-center", k === best); c.classList.toggle("is-side", k !== best); });
+      [...prodDots.children].forEach((d, k) => d.classList.toggle("on", k === best));
+    };
+    productsEl.addEventListener("scroll", () => { if (!pTick) { pTick = true; requestAnimationFrame(centerFocus); } }, { passive: true });
+    window.addEventListener("resize", centerFocus);
+    centerFocus();
+  }
+
+  /* ---------- why: flip tiles ---------- */
+  if (whyEl) {
+    whyEl.innerHTML = WHY.map((w) =>
+      '<button type="button" class="why-tile reveal" aria-pressed="false">' +
+      '<span class="why-in"><span class="why-front"><svg class="why-ic" aria-hidden="true"><use href="#i-' + esc(w.icon) + '"/></svg><b>' + esc(w.title) + '</b><span class="why-more" aria-hidden="true">+</span></span>' +
+      '<span class="why-back"><b>' + esc(w.title) + "</b><span>" + esc(w.text) + "</span></span></span></button>"
+    ).join("");
+    whyEl.addEventListener("click", (e) => {
+      const t = e.target.closest(".why-tile");
+      if (!t) return;
+      const on = !t.classList.contains("is-flipped");
+      t.classList.toggle("is-flipped", on);
+      t.setAttribute("aria-pressed", String(on));
+    });
+  }
+
+  /* ---------- process: interactive stepper ---------- */
+  const STEPS = [
+    ["Chat WhatsApp", "Kirim foto lokasi & kebutuhanmu."],
+    ["Desain & harga", "Mockup + penawaran, gratis."],
+    ["Produksi", "Dikerjakan di workshop sendiri."],
+    ["Pemasangan", "Dipasang sampai lampu menyala."],
+  ];
+  const stepper = $("#stepper");
+  if (stepper) {
+    let cur = 0, timer = null, inView = false, hovering = false;
+    const body = $(".stepper-body", stepper);
+    const setStep = (k) => {
+      cur = k;
+      $$(".stepper-node", stepper).forEach((n, i) => {
+        n.classList.toggle("is-on", i === k);
+        n.classList.toggle("is-done", i < k);
+        n.setAttribute("aria-selected", String(i === k));
+      });
+      stepper.style.setProperty("--sp", String(k / (STEPS.length - 1)));
+      $("#stNo").textContent = "0" + (k + 1);
+      $("#stTitle").textContent = STEPS[k][0];
+      $("#stText").textContent = STEPS[k][1];
+      body.classList.remove("swap");
+      void body.offsetWidth;
+      body.classList.add("swap");
+    };
+    const restart = () => { clearInterval(timer); if (!reduced) timer = setInterval(() => { if (inView && !hovering && !document.hidden) setStep((cur + 1) % STEPS.length); }, 3200); };
+    stepper.addEventListener("click", (e) => { const n = e.target.closest(".stepper-node"); if (n) { setStep(+n.dataset.s); restart(); } });
+    stepper.addEventListener("pointerenter", () => { hovering = true; });
+    stepper.addEventListener("pointerleave", () => { hovering = false; });
+    new IntersectionObserver((en) => { inView = en[0].isIntersecting; }, { threshold: 0.4 }).observe(stepper);
+    setStep(0);
+    restart();
+  }
+
+  /* ---------- portfolio: sliding filter pill + tilt/glare ---------- */
+  const fpill = document.createElement("span");
+  fpill.className = "chip-pill";
+  fpill.setAttribute("aria-hidden", "true");
+  filters.prepend(fpill);
+  const moveFilterPill = () => {
+    const a = $(".chip.is-active", filters);
+    if (!a) return;
+    fpill.style.width = a.offsetWidth + "px";
+    fpill.style.height = a.offsetHeight + "px";
+    fpill.style.transform = "translate(" + a.offsetLeft + "px," + a.offsetTop + "px)";
+  };
+  filters.addEventListener("click", () => requestAnimationFrame(moveFilterPill));
+  window.addEventListener("resize", moveFilterPill);
+  requestAnimationFrame(moveFilterPill);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveFilterPill);
+  if (finePointer && !reduced) {
+    gallery.addEventListener("pointermove", (e) => {
+      const w = e.target.closest(".work");
+      if (!w) return;
+      const r = w.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      w.style.setProperty("--gx", (x * 100).toFixed(1) + "%");
+      w.style.setProperty("--gy", (y * 100).toFixed(1) + "%");
+      w.style.transform = "perspective(1000px) rotateX(" + ((0.5 - y) * 5).toFixed(2) + "deg) rotateY(" + ((x - 0.5) * 7).toFixed(2) + "deg)";
+    });
+    gallery.addEventListener("pointerout", (e) => {
+      const w = e.target.closest(".work");
+      if (w && !w.contains(e.relatedTarget)) w.style.transform = "";
+    });
+  }
+
+  /* ---------- contact: compact (route link instead of big map art) ---------- */
+  if (mapCard && !mapCard.querySelector("iframe")) {
+    const routeA = mapCard.querySelector("a.btn");
+    const href = routeA ? routeA.href : "";
+    mapCard.remove();
+    const pinLi = $$(".contact-list li").find((li) => li.querySelector('use[href="#i-pin"]'));
+    if (pinLi && href) pinLi.insertAdjacentHTML("beforeend", '<a class="route-link" href="' + esc(href) + '" target="_blank" rel="noopener">Rute <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>');
+  }
+
+  /* ---------- tap ripple ---------- */
+  if (!reduced) {
+    document.addEventListener("pointerdown", (e) => {
+      const t = e.target.closest(".btn, .chip, .mq-item, .quiz-opt, .chat-opt, .sim-tab, .pal-item, .tabbar a:not(.tab-wa)");
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      const s = Math.max(r.width, r.height) * 2.2;
+      const sp = document.createElement("span");
+      sp.className = "ripple";
+      sp.style.cssText = "width:" + s + "px;height:" + s + "px;left:" + (e.clientX - r.left - s / 2) + "px;top:" + (e.clientY - r.top - s / 2) + "px";
+      t.appendChild(sp);
+      setTimeout(() => sp.remove(), 650);
+    }, { passive: true });
+  }
+
   /* ---------- go ---------- */
   observeReveal();
   // hero elements: reveal (after intro, if any)
