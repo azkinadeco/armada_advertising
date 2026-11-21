@@ -57,6 +57,16 @@ robots.txt, sitemap.xml → SEO (ganti domain!)
 - **Kartu "Kenapa kami" bisa dibalik**: ketuk/arahkan untuk melihat detail
 - **Cara pesan jadi stepper interaktif**: berjalan otomatis, dan bisa diklik per langkah
 - Efek interaktif: tilt + kilau pada kartu (desktop), ripple saat tombol disentuh, penanda filter yang bergeser, parallax hero saat scroll, dan fokus kartu tengah + titik indikator di carousel produk (HP)
+- **Tali lampu** di papan hero: tarik ke bawah (atau klik) untuk menyalakan/mematikan lampu; ketuk papan untuk ganti warna neon
+- **Detail produk bisa digeser** kiri/kanan di HP, dengan titik posisi
+- **Zoom** di lightbox: klik (desktop) atau cubit dua jari (HP)
+- **Simpan desain simulator jadi gambar PNG** (siang/malam), langsung bisa dibagikan ke WA dari HP
+- Ilustrasi dirender saat mendekati layar, sehingga halaman lebih ringan
+- Sapaan "Butuh bantuan?" muncul sekali per kunjungan (setelah 35 detik atau saat scroll 60%+)
+- Preview link WhatsApp/Facebook: `assets/img/og-share.jpg` (1200×630)
+- Shortcut aplikasi (tekan lama ikon di layar HP): Chat, Simulasi, Kuis
+- Notifikasi offline/online, pemberitahuan "Versi baru tersedia", dan header yang mengecil saat scroll
+- Lolos audit aksesibilitas axe-core (desktop & HP)
 
 ## Cara termudah mengedit data: Panel Admin
 Buka **`admin.html`** di browser (misalnya `http://localhost:8080/admin.html`, atau `domainanda.com/admin.html` setelah online).
@@ -100,6 +110,7 @@ Kalau ada masalah cache, naikkan `VERSION` di `sw.js` (misalnya `armada-v2`).
 
 ## Domain
 Setelah punya domain, ganti `GANTI-DOMAIN-ANDA.com` di `robots.txt` dan `sitemap.xml`.
+Agar preview link di WhatsApp tampil sempurna, ubah juga `og:image` dan `twitter:image` di `index.html` menjadi alamat lengkap, contoh `https://domainanda.com/assets/img/og-share.jpg`.
 
 ## Online-kan
 Upload seluruh folder ini ke hosting mana saja (Netlify, Vercel, GitHub Pages, atau cPanel). Tidak perlu server khusus.

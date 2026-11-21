@@ -8,9 +8,15 @@
   <meta name="theme-color" content="#0d0b0c" />
   <meta property="og:title" content="CV Armada Advertising" />
   <meta property="og:description" content="Signage yang bikin usahamu kelihatan. Neon box, huruf timbul, neon flex, billboard & lainnya." />
-  <meta property="og:image" content="assets/img/og-image.jpg" />
+  <meta property="og:image" content="assets/img/og-share.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="CV Armada Advertising — Neon Box, Huruf Timbul, Neon Flex, Billboard, Branding" />
+  <meta property="og:site_name" content="CV Armada Advertising" />
+  <meta property="og:locale" content="id_ID" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="assets/img/og-share.jpg" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23F5E400'/%3E%3Cpath d='M50 16L84 82H16z' fill='%23B5141D'/%3E%3Cpath d='M50 16L58 64L16 82z' fill='%23DA1C24'/%3E%3Cpath d='M50 16L84 82L58 64z' fill='%238A0D16'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -81,7 +87,7 @@
 
         <!-- Interactive neon sign -->
         <div class="sign-wrap reveal">
-          <div class="sign is-on" id="sign" data-cursor="Ketuk" role="button" tabindex="0" aria-label="Ganti warna lampu neon">
+          <div class="sign is-on" id="sign" data-cursor="Ketuk">
             <div class="hs hs-sky" aria-hidden="true"></div>
             <div class="hs hs-moon" aria-hidden="true"></div>
             <svg class="hs hs-city" id="heroCity" viewBox="0 0 400 160" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
@@ -92,7 +98,7 @@
               <span class="hs-door"></span>
             </div>
             <div class="hs hs-ground" aria-hidden="true"></div>
-            <div class="sign-board" id="signBoard">
+            <div class="sign-board" id="signBoard" role="button" tabindex="0" aria-label="Ganti warna lampu neon">
               <svg class="sign-tri" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z"/><path d="M50 4L61 68L2 96z"/><path d="M50 4L98 96L61 68z"/></svg>
               <span class="sign-text">
                 <span class="sign-letters" aria-label="Armada">RMADA</span>
@@ -101,6 +107,10 @@
             </div>
             <div class="sign-glow" aria-hidden="true"></div>
             <span class="sign-tap" aria-hidden="true"><svg class="i"><use href="#i-sparkle"/></svg></span>
+            <button class="cord" id="signCord" type="button" data-cursor="Tarik" aria-pressed="true" aria-label="Tarik tali untuk menyalakan atau mematikan lampu">
+              <span class="cord-line" aria-hidden="true"></span>
+              <span class="cord-knob" aria-hidden="true"></span>
+            </button>
           </div>
           <div class="sign-ctrl">
             <button class="switch" id="signSwitch" aria-pressed="true" aria-label="Nyalakan / matikan lampu signage">
@@ -218,6 +228,7 @@
               <a class="btn btn-yellow btn-lg" id="simWa" href="#" target="_blank" rel="noopener">
                 <svg class="i" aria-hidden="true"><use href="#i-wa"/></svg> Kirim ke WA
               </a>
+              <button class="icon-btn icon-btn-lg" id="simSave" type="button" aria-label="Simpan desain sebagai gambar"><svg class="i"><use href="#i-download"/></svg></button>
               <button class="icon-btn icon-btn-lg" id="simShare" type="button" aria-label="Bagikan link desain ini"><svg class="i"><use href="#i-link"/></svg></button>
             </div>
           </div>
@@ -356,7 +367,7 @@
       </div>
       <div class="fcol fcol-qr" id="qrCol" hidden>
         <p class="fcol-h">Buka di HP</p>
-        <div class="qr" id="qrBox" aria-label="QR code alamat website"></div>
+        <div class="qr" id="qrBox" role="img" aria-label="QR code alamat website"></div>
         <p class="fcol-small">Scan untuk membuka website ini di HP.</p>
       </div>
     </div>
@@ -411,10 +422,11 @@
     <a href="#kontak" data-id="kontak"><span>Kontak</span></a>
   </nav>
 
+  <aside class="quick" aria-label="Kontak cepat">
   <button class="totop" id="toTop" type="button" aria-label="Kembali ke atas"><svg class="i" aria-hidden="true"><use href="#i-up"/></svg></button>
 
   <!-- Quick chat -->
-  <div class="chat" id="chat" aria-hidden="true">
+  <div class="chat" id="chat" aria-hidden="true" inert>
     <div class="chat-card" role="dialog" aria-modal="false" aria-labelledby="chatName">
       <div class="chat-head">
         <span class="chat-av"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z" fill="#B5141D"/><path d="M50 4L61 68L2 96z" fill="#DA1C24"/><path d="M50 4L98 96L61 68z" fill="#8A0D16"/></svg></span>
@@ -439,6 +451,7 @@
     <svg class="i" aria-hidden="true"><use href="#i-wa"/></svg>
     <span class="fab-tip">Chat kami</span>
   </a>
+  </aside>
 
   <!-- Bottom nav (mobile) -->
   <nav class="tabbar" id="tabbar" aria-label="Navigasi">
@@ -480,6 +493,7 @@
     </figure>
     <div class="lb-count" id="lbCount"></div>
     <div class="lb-bars" id="lbBars" aria-hidden="true"></div>
+    <button class="lb-zoom-out" id="lbZoomOut" type="button" aria-label="Perkecil kembali"><svg class="i"><use href="#i-minus"/></svg> 1×</button>
   </div>
 
   <div class="toast" id="toast" role="status"></div>

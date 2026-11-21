@@ -1468,3 +1468,95 @@ main { overflow-x: clip; }
 .chips .chip, .sim-opts .chip, .order-chips .chip { flex: none; }
 @media (max-width: 640px) { .section-aside { display: none; } }
 .mq-item, .sim-tab, .stepper-node { flex-shrink: 0; }
+
+/* =========================================================
+   BATCH 7 — cord, sheet swipe, zoom, lazy scenes, nudge,
+   update bar, compact header, sim save
+   ========================================================= */
+
+/* ---------- pull cord ---------- */
+.sign-ctrl { display: none; }
+.sign-wrap { gap: 0; }
+.cord { --len: 72px; --pull: 0px; position: absolute; left: 73%; top: 51%; z-index: 6; width: 44px; height: calc(var(--len) + var(--pull) + 30px); margin-left: -22px; transform-origin: 50% 0; animation: swing 4s ease-in-out infinite; cursor: grab; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.cord.is-pulling { cursor: grabbing; animation: none; }
+.cord.tug { animation: tug 0.9s var(--ease); }
+.cord-line { position: absolute; left: 50%; top: 0; width: 2px; height: calc(var(--len) + var(--pull)); margin-left: -1px; border-radius: 1px; background: repeating-linear-gradient(180deg, #d8d2c4 0 3px, #8d877b 3px 5px); box-shadow: 0 0 4px rgba(0, 0, 0, 0.6); }
+.cord-knob { position: absolute; left: 50%; top: calc(var(--len) + var(--pull) - 2px); width: 16px; height: 24px; margin-left: -8px; border-radius: 8px 8px 11px 11px; background: radial-gradient(circle at 35% 28%, #fffbe0, #f5e400 45%, #b8a800); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 -3px 4px rgba(0, 0, 0, 0.25); transition: box-shadow 0.3s; }
+.cord:not(.is-pulling) .cord-line, .cord:not(.is-pulling) .cord-knob { transition: height 0.55s cubic-bezier(0.34, 1.7, 0.6, 1), top 0.55s cubic-bezier(0.34, 1.7, 0.6, 1), box-shadow 0.3s; }
+.sign.is-on .cord-knob { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 16px rgba(245, 228, 0, 0.8); }
+.cord:not(.used) .cord-knob { animation: cordHint 3.2s ease-in-out 1.5s infinite; }
+.cord:focus-visible { outline: none; }
+.cord:focus-visible .cord-knob { outline: 2px solid #fff; outline-offset: 3px; }
+@keyframes swing { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes tug { 0% { transform: rotate(0); } 25% { transform: rotate(9deg); } 55% { transform: rotate(-6deg); } 80% { transform: rotate(3deg); } 100% { transform: rotate(0); } }
+@keyframes cordHint { 0%, 70%, 100% { transform: none; } 78% { transform: translateY(10px); } 86% { transform: translateY(0); } 92% { transform: translateY(5px); } }
+
+/* ---------- sheet: dots + slide ---------- */
+.pd-dots { display: flex; gap: 5px; margin-bottom: 14px; }
+.pd-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(13, 11, 12, 0.18); transition: width 0.3s var(--ease), background 0.3s; }
+.pd-dots i.on { width: 20px; background: var(--ink); }
+.sheet-body.slide-l .pd { animation: slideL 0.38s var(--ease); }
+.sheet-body.slide-r .pd { animation: slideR 0.38s var(--ease); }
+@keyframes slideL { from { opacity: 0.2; transform: translateX(40px); } }
+@keyframes slideR { from { opacity: 0.2; transform: translateX(-40px); } }
+
+/* ---------- lightbox zoom ---------- */
+.lb-media { cursor: zoom-in; }
+.lb-media.is-zoomed { cursor: zoom-out; }
+.lb-media > .ph, .lb-media > img, .lb-media > .lb-before { transform: scale(var(--zs, 1)); transform-origin: var(--zx, 50%) var(--zy, 50%); transition: transform 0.35s var(--ease), transform-origin 0.12s linear, opacity 0.5s; }
+.lb-media.is-pinching > * { transition: none; }
+.lb-zoom-out { position: absolute; top: 16px; left: 50%; z-index: 4; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--yellow); color: var(--ink); font-weight: 800; font-size: 0.82rem; transform: translate(-50%, -10px); opacity: 0; pointer-events: none; transition: all 0.3s var(--ease); }
+.lightbox.is-zoomed .lb-zoom-out { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.lightbox.is-zoomed .lb-count, .lightbox.is-zoomed .lb-bars { opacity: 0; }
+
+/* ---------- lazy scene slot ---------- */
+.scene-slot { position: absolute; inset: 0; display: block; background: linear-gradient(100deg, #191617 30%, #262122 50%, #191617 70%) 0 0 / 300% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -50% 0; } }
+.ph-scene .scene, .product-visual svg.scene { animation: sceneIn 0.5s ease; }
+@keyframes sceneIn { from { opacity: 0; } }
+
+/* ---------- nudge ---------- */
+.nudge { position: fixed; right: 96px; bottom: 32px; z-index: 41; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 6px; border-radius: 999px; background: #fff; color: var(--ink); box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6); opacity: 0; transform: translateX(12px) scale(0.95); pointer-events: none; transition: opacity 0.35s, transform 0.45s var(--ease); }
+.nudge.is-show { opacity: 1; transform: none; pointer-events: auto; }
+.nudge::after { content: ""; position: absolute; right: -6px; top: 50%; width: 12px; height: 12px; margin-top: -6px; background: #fff; transform: rotate(45deg); border-radius: 2px; }
+.nudge-main { display: flex; align-items: center; gap: 10px; padding: 4px 10px 4px 4px; font-weight: 800; font-size: 0.88rem; }
+.nudge-av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--yellow); }
+.nudge-av svg { width: 16px; height: 16px; }
+.nudge-x { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--cream-2); font-size: 1rem; line-height: 1; position: relative; z-index: 1; }
+
+/* ---------- update bar ---------- */
+.upd { position: fixed; left: 50%; top: 14px; z-index: 130; display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 999px; background: #fff; color: var(--ink); font-weight: 700; font-size: 0.86rem; box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6); transform: translate(-50%, -80px); transition: transform 0.45s var(--ease); }
+.upd.is-show { transform: translate(-50%, 0); }
+.upd button { padding: 8px 14px; border-radius: 999px; background: var(--ink); color: var(--yellow); font-weight: 800; }
+
+/* ---------- compact header on scroll (desktop) ---------- */
+@media (min-width: 641px) {
+  .header { transition: background 0.3s, border-color 0.3s, transform 0.4s var(--ease), height 0.35s var(--ease); }
+  .header.is-scrolled { height: 60px; }
+  .header .brand { transition: transform 0.35s var(--ease); transform-origin: left center; }
+  .header.is-scrolled .brand { transform: scale(0.9); }
+}
+
+/* ---------- sim save button busy ---------- */
+#simSave.is-busy .i { animation: spin 0.8s linear infinite; }
+
+/* ---------- responsive (batch 7) ---------- */
+@media (max-width: 640px) {
+  .cord { --len: 40px; left: 76%; top: 50%; width: 40px; margin-left: -20px; }
+  .cord-knob { width: 13px; height: 19px; margin-left: -6.5px; }
+  .nudge { right: auto; left: 50%; bottom: calc(92px + env(safe-area-inset-bottom)); transform: translate(-50%, 12px) scale(0.95); }
+  .nudge.is-show { transform: translate(-50%, 0); }
+  .nudge::after { right: auto; left: 50%; top: auto; bottom: -6px; margin: 0 0 0 -6px; }
+  .sim-actions { gap: 8px; }
+}
+
+/* a11y fixes (axe) */
+.header .brand-top, .footer .brand-top { color: #ef3038; }
+.quick { display: contents; }
+.sign-board:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+@media (max-width: 640px) {
+  .header.is-scrolled { background: rgba(13, 11, 12, 0.95); }
+  .brand-top { font-size: 1.18rem; }
+}
+.nudge-main span:last-child { white-space: nowrap; }
+@media (max-width: 640px) { .pd-nav [data-step] { display: none; } }

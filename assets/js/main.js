@@ -85,7 +85,10 @@
     container.appendChild(img);
   }
 
-  function placeholder(cat, icon, seed = 0) {
+  function placeholder(cat, icon, seed = 0, lazy = false) {
+    if (window.ArmadaScene && lazy) {
+      return `<div class="ph ph-scene" data-cat="${esc(cat)}"><span class="scene-slot" data-cat="${esc(cat)}" data-seed="${seed}"></span><span class="ph-tag">Ilustrasi</span></div>`;
+    }
     if (window.ArmadaScene) {
       return `<div class="ph ph-scene" data-cat="${esc(cat)}">${window.ArmadaScene.render(cat, seed)}<span class="ph-tag">Ilustrasi</span></div>`;
     }
@@ -96,7 +99,8 @@
     </div>`;
   }
 
-  function productScene(p) {
+  function productScene(p, lazy) {
+    if (window.ArmadaScene && p.category && lazy) return `<span class="scene-slot" data-cat="${esc(p.category)}" data-seed="${PRODUCTS.indexOf(p) + 3}"></span>`;
     if (window.ArmadaScene && p.category) return window.ArmadaScene.render(p.category, PRODUCTS.indexOf(p) + 3);
     return `<svg aria-hidden="true"><use href="#p-${p.icon}"/></svg>`;
   }
@@ -268,7 +272,7 @@
 
   gallery.innerHTML = PORTFOLIO.map(
     (p, i) => `<button data-cursor="Lihat" class="work reveal${p.featured ? " is-featured" : p.wide ? " is-wide" : ""}" data-i="${i}" data-cat="${esc(p.category)}" aria-label="Lihat ${esc(p.title)}">
-      <div class="work-media">${placeholder(p.category, catIcon[p.category] || "box", i)}</div>
+      <div class="work-media">${placeholder(p.category, catIcon[p.category] || "box", i, true)}</div>
       <div class="work-info">
         <div><span class="work-cat">${esc(p.category)}${p.place ? " · " + esc(p.place) : ""}</span><span class="work-title">${esc(p.title)}</span></div>
         <span class="work-zoom"><svg class="i"><use href="#i-arrow"/></svg></span>
@@ -364,6 +368,7 @@
   function renderLb(dir = 0) {
     const p = PORTFOLIO[visibleList[lbPos]];
     lbMedia.classList.remove("has-img", "swap");
+    setZoom(1);
     lbMedia.innerHTML = placeholder(p.category, catIcon[p.category] || "box", visibleList[lbPos]);
     const ba = $("#lbBA");
     lbMedia.classList.remove("show-before");
@@ -480,6 +485,7 @@
   }, { passive: true });
   lbFig.addEventListener("touchend", (e) => {
     clearTimeout(holdT);
+    if (lbZoom.active || lbZoom.justPinched) { lbZoom.justPinched = false; held = false; return; }
     const dx = e.changedTouches[0].clientX - sx;
     const dy = e.changedTouches[0].clientY - sy;
     if (held) { held = false; storyResume(); return; }
@@ -500,7 +506,7 @@
       <div class="product-visual">
         <span class="product-no">${String(i + 1).padStart(2, "0")}</span>
         ${p.badge ? `<span class="product-badge">${esc(p.badge)}</span>` : ""}
-        ${productScene(p)}
+        ${productScene(p, true)}
       </div>
       <div class="product-body">
         <div><span class="product-name">${esc(p.name)}</span><span class="product-tag">${esc(p.tagline)}</span>${p.startPrice ? `<span class="product-price">Mulai ${esc(p.startPrice)}</span>` : ""}</div>
@@ -535,6 +541,7 @@
         ${productScene(p)}
       </div>
       <div class="pd-info">
+        <div class="pd-dots" aria-hidden="true">${PRODUCTS.map((_, k) => `<i${k === curProduct ? ' class="on"' : ""}></i>`).join("")}</div>
         <p class="pd-tagline">${esc(p.tagline)}</p>
         <h3 class="pd-name" id="sheetTitle">${esc(p.name)}</h3>
         <p class="pd-desc">${esc(p.desc)}</p>
@@ -600,16 +607,18 @@
   });
 
   // drag-to-close (mobile bottom sheet)
-  let dragY = 0, dragging = false, startY = 0;
+  let dragY = 0, dragging = false, startY = 0, startX = 0;
   function dragStart(e) {
     if (!isMobile()) return;
     if (sheetPanel.scrollTop > 0 && !e.target.closest("#sheetHandle")) return;
     dragging = true;
     startY = e.touches[0].clientY;
+    startX = e.touches[0].clientX;
     dragY = 0;
   }
   function dragMove(e) {
     if (!dragging) return;
+    if (Math.abs(e.touches[0].clientX - startX) > Math.abs(e.touches[0].clientY - startY)) return;
     dragY = Math.max(0, e.touches[0].clientY - startY);
     if (dragY > 0) {
       sheetPanel.classList.add("is-dragging");
@@ -865,7 +874,7 @@
       if (dragging) fromEvent(e);
     });
     const stop = () => { dragging = false; signDrag = null; stage.classList.remove("is-dragging", "is-moving"); };
-    simApi = { st, renderSim, setPos, setScale };
+    simApi = { st, renderSim, setPos, setScale, pos, getSplit: () => split };
     stage.addEventListener("pointerup", stop);
     stage.addEventListener("pointercancel", stop);
     handle.addEventListener("keydown", (e) => {
@@ -1188,7 +1197,7 @@
 
   /* ---------- PWA: service worker (https / localhost only) ---------- */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").then(swReady).catch(() => {}));
   }
 
   /* =========================================================
@@ -1242,6 +1251,7 @@
   function openChat() {
     chat.classList.add("is-open");
     chat.setAttribute("aria-hidden", "false");
+    chat.inert = false;
     document.body.classList.add("chat-open");
     document.body.classList.remove("nav-hidden");
     const st = typeof openStatus === "function" ? openStatus() : null;
@@ -1259,6 +1269,7 @@
   function closeChat() {
     chat.classList.remove("is-open");
     chat.setAttribute("aria-hidden", "true");
+    chat.inert = true;
     document.body.classList.remove("chat-open");
   }
   const toggleChat = (e) => {
@@ -1588,6 +1599,8 @@
       sc.onload = () => {
         try {
           new window.QRCode($("#qrBox"), { text: location.origin + location.pathname, width: 116, height: 116, colorDark: "#0d0b0c", colorLight: "#ffffff", correctLevel: window.QRCode.CorrectLevel.M });
+          $$("#qrBox img, #qrBox canvas").forEach((el) => { el.setAttribute("alt", ""); el.setAttribute("aria-hidden", "true"); });
+          $("#qrBox").title = "";
         } catch (err) { qrCol.hidden = true; }
       };
       sc.onerror = () => { qrCol.hidden = true; };
@@ -1804,6 +1817,361 @@
     }, { passive: true });
   }
 
+  /* =========================================================
+     BATCH 7
+     ========================================================= */
+
+  /* ---------- 1. pull cord (lamp on/off) ---------- */
+  const cord = $("#signCord");
+  if (cord) {
+    let y0 = 0, pulling = false, pulled = 0, skipClick = false;
+    const syncCord = () => cord.setAttribute("aria-pressed", String(sign.classList.contains("is-on")));
+    new MutationObserver(syncCord).observe(sign, { attributes: true, attributeFilter: ["class"] });
+    const toggleLamp = () => {
+      setSign(!sign.classList.contains("is-on"));
+      if (typeof buzz === "function") buzz();
+      cord.classList.add("used");
+      cord.classList.remove("tug");
+      void cord.offsetWidth;
+      cord.classList.add("tug");
+    };
+    cord.addEventListener("pointerdown", (e) => {
+      e.stopPropagation();
+      pulling = true; pulled = 0; y0 = e.clientY;
+      try { cord.setPointerCapture(e.pointerId); } catch (err) {}
+      cord.classList.add("is-pulling");
+    });
+    cord.addEventListener("pointermove", (e) => {
+      if (!pulling) return;
+      pulled = Math.max(0, Math.min(isMobile() ? 44 : 84, e.clientY - y0));
+      cord.style.setProperty("--pull", pulled.toFixed(0) + "px");
+    });
+    const release = () => {
+      if (!pulling) return;
+      pulling = false;
+      cord.classList.remove("is-pulling");
+      if (pulled > (isMobile() ? 22 : 34)) { toggleLamp(); skipClick = true; }
+      else if (pulled > 6) skipClick = true;
+      cord.style.setProperty("--pull", "0px");
+      pulled = 0;
+    };
+    cord.addEventListener("pointerup", release);
+    cord.addEventListener("pointercancel", release);
+    cord.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (skipClick) { skipClick = false; return; }
+      toggleLamp();
+    });
+  }
+
+  /* ---------- 2. swipe between products in the sheet ---------- */
+  function slideSheet(d) {
+    sheetBody.classList.remove("slide-l", "slide-r");
+    void sheetBody.offsetWidth;
+    sheetBody.classList.add(d > 0 ? "slide-l" : "slide-r");
+  }
+  let swX = 0, swY = 0, swOk = false;
+  sheetPanel.addEventListener("touchstart", (e) => {
+    swOk = sheetMode === "product" && !e.target.closest(".pd-rel-row, .cmp-scroll, .sheet-handle");
+    swX = e.touches[0].clientX; swY = e.touches[0].clientY;
+  }, { passive: true });
+  sheetPanel.addEventListener("touchend", (e) => {
+    if (!swOk) return;
+    const dx = e.changedTouches[0].clientX - swX, dy = e.changedTouches[0].clientY - swY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      const d = dx < 0 ? 1 : -1;
+      renderSheet(curProduct + d);
+      slideSheet(d);
+      if (navigator.vibrate) navigator.vibrate(8);
+    }
+  });
+  sheet.addEventListener("click", (e) => {
+    const s2 = e.target.closest("[data-step]");
+    if (s2) slideSheet(+s2.dataset.step);
+  });
+
+  /* ---------- 3. lightbox zoom (click on desktop, pinch on mobile) ---------- */
+  const lbZoom = { active: false, justPinched: false, d0: 0, s: 1 };
+  function setZoom(sc, ox, oy) {
+    lbZoom.s = sc;
+    const was = lbZoom.active;
+    lbZoom.active = sc > 1.05;
+    lbMedia.classList.toggle("is-zoomed", lbZoom.active);
+    lb.classList.toggle("is-zoomed", lbZoom.active);
+    lbMedia.style.setProperty("--zs", sc.toFixed(2));
+    if (ox != null) { lbMedia.style.setProperty("--zx", ox.toFixed(1) + "%"); lbMedia.style.setProperty("--zy", oy.toFixed(1) + "%"); }
+    if (lb.classList.contains("is-story") && lb.classList.contains("is-open")) {
+      if (lbZoom.active && !was) storyPause();
+      else if (!lbZoom.active && was) storyResume();
+    }
+  }
+  const zPct = (cx, cy) => { const r = lbMedia.getBoundingClientRect(); return [((cx - r.left) / r.width) * 100, ((cy - r.top) / r.height) * 100]; };
+  lbMedia.addEventListener("click", (e) => {
+    if (isMobile() || e.target.closest("button, a")) return;
+    if (lbZoom.active) { setZoom(1); return; }
+    const [x, y] = zPct(e.clientX, e.clientY);
+    setZoom(2.2, x, y);
+  });
+  lbMedia.addEventListener("mousemove", (e) => {
+    if (!lbZoom.active || isMobile()) return;
+    const [x, y] = zPct(e.clientX, e.clientY);
+    lbMedia.style.setProperty("--zx", x.toFixed(1) + "%");
+    lbMedia.style.setProperty("--zy", y.toFixed(1) + "%");
+  });
+  lbMedia.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 2) {
+      const [a, b2] = e.touches;
+      lbZoom.d0 = Math.hypot(a.clientX - b2.clientX, a.clientY - b2.clientY) / lbZoom.s;
+      lbZoom.justPinched = true;
+      lbMedia.classList.add("is-pinching");
+    }
+  }, { passive: true });
+  lbMedia.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 2 && lbZoom.d0) {
+      const [a, b2] = e.touches;
+      const dd = Math.hypot(a.clientX - b2.clientX, a.clientY - b2.clientY);
+      const [x, y] = zPct((a.clientX + b2.clientX) / 2, (a.clientY + b2.clientY) / 2);
+      setZoom(Math.max(1, Math.min(3, dd / lbZoom.d0)), x, y);
+    } else if (e.touches.length === 1 && lbZoom.active) {
+      const [x, y] = zPct(e.touches[0].clientX, e.touches[0].clientY);
+      lbMedia.style.setProperty("--zx", x.toFixed(1) + "%");
+      lbMedia.style.setProperty("--zy", y.toFixed(1) + "%");
+    }
+  }, { passive: true });
+  lbMedia.addEventListener("touchend", (e) => {
+    if (e.touches.length === 0) {
+      lbMedia.classList.remove("is-pinching");
+      lbZoom.d0 = 0;
+      if (lbZoom.s < 1.15) setZoom(1);
+    }
+  }, { passive: true });
+  $("#lbZoomOut").addEventListener("click", () => setZoom(1));
+
+  /* ---------- 4. lazy-render illustrations near the viewport ---------- */
+  if (window.ArmadaScene && "IntersectionObserver" in window) {
+    const sceneIO = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        const el = en.target;
+        sceneIO.unobserve(el);
+        el.outerHTML = window.ArmadaScene.render(el.dataset.cat, +el.dataset.seed || 0);
+      });
+    }, { rootMargin: "500px 0px" });
+    $$(".scene-slot").forEach((el) => sceneIO.observe(el));
+  } else if (window.ArmadaScene) {
+    $$(".scene-slot").forEach((el) => { el.outerHTML = window.ArmadaScene.render(el.dataset.cat, +el.dataset.seed || 0); });
+  }
+
+  /* ---------- 5. gentle help nudge (once per session) ---------- */
+  (function nudge() {
+    try { if (sessionStorage.getItem("armada-nudge")) return; } catch (e) {}
+    let shown = false;
+    const bubble = document.createElement("div");
+    bubble.className = "nudge";
+    bubble.inert = true;
+    bubble.innerHTML = '<button type="button" class="nudge-main"><span class="nudge-av" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M50 4L98 96H2z" fill="#B5141D"/><path d="M50 4L61 68L2 96z" fill="#DA1C24"/><path d="M50 4L98 96L61 68z" fill="#8A0D16"/></svg></span><span>Butuh bantuan? 👋</span></button><button type="button" class="nudge-x" aria-label="Tutup">×</button>';
+    document.body.appendChild(bubble);
+    const busy = () => document.body.classList.contains("chat-open") || sheet.classList.contains("is-open") || lb.classList.contains("is-open") || pal.classList.contains("is-open");
+    const hide = () => { bubble.classList.remove("is-show"); bubble.inert = true; };
+    const show = () => {
+      if (shown || busy()) return;
+      shown = true;
+      bubble.classList.add("is-show");
+      bubble.inert = false;
+      try { sessionStorage.setItem("armada-nudge", "1"); } catch (e) {}
+      setTimeout(hide, 12000);
+    };
+    setTimeout(show, 35000);
+    const onS = () => {
+      const p = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      if (p > 0.62) { window.removeEventListener("scroll", onS); show(); }
+    };
+    window.addEventListener("scroll", onS, { passive: true });
+    bubble.addEventListener("click", (e) => {
+      hide();
+      if (!e.target.closest(".nudge-x")) openChat();
+    });
+    $$(".fab, .tab-wa").forEach((el) => el.addEventListener("click", () => { shown = true; hide(); }));
+  })();
+
+  /* ---------- 8. offline / online, update available ---------- */
+  window.addEventListener("offline", () => toast("Kamu sedang offline"));
+  window.addEventListener("online", () => toast("Kembali online ✓"));
+  function swReady() {
+    if (!navigator.serviceWorker.controller) return;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (swReady.shown) return;
+      swReady.shown = true;
+      const bar = document.createElement("div");
+      bar.className = "upd";
+      bar.setAttribute("role", "status");
+      bar.innerHTML = '<span>Versi baru tersedia</span><button type="button">Muat ulang</button>';
+      document.body.appendChild(bar);
+      requestAnimationFrame(() => bar.classList.add("is-show"));
+      bar.querySelector("button").addEventListener("click", () => location.reload());
+    });
+  }
+
+  /* ---------- 9. save simulator design as PNG ---------- */
+  let simPhotoImg = null;
+  if (photoIn) photoIn.addEventListener("change", () => { if (photoUrl) { simPhotoImg = new Image(); simPhotoImg.src = photoUrl; } });
+  const hexRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+  const rgba = (h, a) => { const [r, g, b2] = hexRgb(h); return "rgba(" + r + "," + g + "," + b2 + "," + a + ")"; };
+  const mixHex = (a, b2, t) => { const x = hexRgb(a), y = hexRgb(b2); return "rgb(" + x.map((v, i) => Math.round(v * (1 - t) + y[i] * t)).join(",") + ")"; };
+  const shadeHex = (h, f) => "rgb(" + hexRgb(h).map((v) => Math.round(v * f)).join(",") + ")";
+  async function exportSim() {
+    if (!simApi) return;
+    const st = simApi.st, pos = simApi.pos, split = simApi.getSplit() / 100;
+    const W = 1200, H = 750, k = W / (stage.clientWidth || 600);
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const c = cv.getContext("2d");
+    const fam = { modern: ["900", "Montserrat"], elegan: ["700", "Playfair Display"], script: ["400", "Pacifico"] }[st.font] || ["900", "Montserrat"];
+    const weight = st.type === "neon" && st.font === "modern" ? "600" : fam[0];
+    try { await document.fonts.load(weight + ' 80px "' + fam[1] + '"'); } catch (e) {}
+    const text = st.text.trim() || "TOKO ANDA";
+    const setFont = (size) => { c.font = weight + " " + size + 'px "' + fam[1] + '", sans-serif'; };
+    let fs = H * (st.type === "box" ? 0.2 : 0.26);
+    setFont(fs);
+    const extra = st.type === "box" ? 1.25 : 1.05;
+    const tw0 = c.measureText(text).width * extra;
+    if (tw0 > W * 0.84) fs *= (W * 0.84) / tw0;
+    fs *= pos.s || 1;
+    setFont(fs);
+    const cx = W / 2 + (pos.x || 0) * k, cy = H / 2 + (pos.y || 0) * k;
+    const col = st.color;
+    const brick = (x, y, w, h, f) => { c.fillStyle = f; c.fillRect(x, y, w, h); };
+
+    function wall(night) {
+      const s = 1.6;
+      if (st.wall === "foto" && simPhotoImg && simPhotoImg.naturalWidth) {
+        const r = Math.max(W / simPhotoImg.naturalWidth, H / simPhotoImg.naturalHeight);
+        const iw = simPhotoImg.naturalWidth * r, ih = simPhotoImg.naturalHeight * r;
+        c.drawImage(simPhotoImg, (W - iw) / 2, (H - ih) / 2, iw, ih);
+      } else if (st.wall === "beton") {
+        const g = c.createRadialGradient(W * 0.3, H * 0.4, 40, W * 0.3, H * 0.4, W * 0.9);
+        g.addColorStop(0, "#b4b1ab"); g.addColorStop(1, "#8f8c86");
+        c.fillStyle = g; c.fillRect(0, 0, W, H);
+        c.strokeStyle = "rgba(0,0,0,.18)"; c.lineWidth = 1.5;
+        for (let x = 0; x < W; x += 180 * s) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+        for (let y = 0; y < H; y += 110 * s) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+        c.fillStyle = "rgba(0,0,0,.28)";
+        for (let x = 0; x < W; x += 180 * s) for (let y = 0; y < H; y += 110 * s) { c.beginPath(); c.arc(x + 12 * s, y + 12 * s, 3.5 * s, 0, 7); c.fill(); }
+      } else if (st.wall === "kayu") {
+        for (let x = 0; x < W; x += 110 * s) {
+          brick(x, 0, 52 * s, H, "#8c5b34"); brick(x + 52 * s, 0, 2 * s, H, "#5e3a1d");
+          brick(x + 54 * s, 0, 54 * s, H, "#9a6a3f"); brick(x + 108 * s, 0, 2 * s, H, "#5e3a1d");
+        }
+        c.fillStyle = "rgba(0,0,0,.05)";
+        for (let y = 0; y < H; y += 7) c.fillRect(0, y, W, 2);
+      } else if (st.wall === "acp") {
+        const g = c.createLinearGradient(0, 0, W, H);
+        g.addColorStop(0, "#34363b"); g.addColorStop(0.45, "#24262a"); g.addColorStop(1, "#303237");
+        c.fillStyle = g; c.fillRect(0, 0, W, H);
+        c.fillStyle = "#0e0f11";
+        for (let x = 158 * s; x < W; x += 161 * s) c.fillRect(x, 0, 3 * s, H);
+        for (let y = 104 * s; y < H; y += 107 * s) c.fillRect(0, y, W, 3 * s);
+      } else {
+        c.fillStyle = "#cdb89d"; c.fillRect(0, 0, W, H);
+        const tw = 88 * s, th = 44 * s;
+        for (let y = 0; y < H; y += th) for (let x = -tw; x < W + tw; x += tw) {
+          brick(x + 1.5 * s, y + 1.5 * s, 85 * s, 19 * s, "#a64d2e");
+          brick(x - 42.5 * s, y + 23.5 * s, 85 * s, 19 * s, "#964428");
+          brick(x + 45.5 * s, y + 23.5 * s, 85 * s, 19 * s, "#b15a38");
+        }
+      }
+      const lg = c.createLinearGradient(0, 0, 0, H);
+      lg.addColorStop(0, "rgba(255,255,255,.14)"); lg.addColorStop(0.4, "rgba(255,255,255,0)"); lg.addColorStop(1, "rgba(0,0,0,.28)");
+      c.fillStyle = lg; c.fillRect(0, 0, W, H);
+      if (night) {
+        c.fillStyle = "rgba(4,6,16,.8)"; c.fillRect(0, 0, W, H);
+        const rg = c.createRadialGradient(cx, cy, 0, cx, cy, W * 0.42);
+        rg.addColorStop(0, rgba(col, 0.32)); rg.addColorStop(1, rgba(col, 0));
+        c.fillStyle = rg; c.fillRect(0, 0, W, H);
+      }
+    }
+
+    function signDraw(night) {
+      c.textAlign = "center"; c.textBaseline = "middle";
+      const reset = () => { c.shadowColor = "transparent"; c.shadowBlur = 0; c.shadowOffsetX = 0; c.shadowOffsetY = 0; };
+      const glow = (blurs, color, fill) => { blurs.forEach((b2) => { c.shadowColor = color; c.shadowBlur = b2; c.fillStyle = fill; c.fillText(text, cx, cy); }); reset(); };
+      const grad = (stops) => { const g = c.createLinearGradient(0, cy - fs * 0.5, 0, cy + fs * 0.5); stops.forEach(([o, cl]) => g.addColorStop(o, cl)); return g; };
+      if (st.type === "gold" || st.type === "silver") {
+        const gold = st.type === "gold";
+        const stops = gold ? [[0, "#fff5cc"], [0.35, "#f1c75c"], [0.55, "#a5711b"], [0.8, "#f6db88"], [1, "#c8932f"]] : [[0, "#ffffff"], [0.35, "#ccd1d7"], [0.55, "#6c737b"], [0.8, "#eef1f4"], [1, "#9aa1a9"]];
+        const edge = gold ? "#6b470e" : "#4f555b";
+        if (!night) {
+          c.shadowColor = "rgba(0,0,0,.5)"; c.shadowBlur = 14; c.shadowOffsetX = 5; c.shadowOffsetY = 9;
+          c.fillStyle = edge; c.fillText(text, cx + 3, cy + 3); reset();
+          c.fillText(text, cx + 2, cy + 2); c.fillText(text, cx + 1, cy + 1);
+          c.fillStyle = grad(stops); c.fillText(text, cx, cy);
+        } else {
+          glow([44, 20, 6], col, col);
+          c.fillStyle = grad(stops.map(([o, cl]) => [o, shadeHex(cl, 0.5)])); c.fillText(text, cx, cy);
+        }
+      } else if (st.type === "akrilik") {
+        if (!night) {
+          c.shadowColor = "rgba(0,0,0,.4)"; c.shadowBlur = 10; c.shadowOffsetX = 4; c.shadowOffsetY = 8;
+          c.fillStyle = col; c.fillText(text, cx, cy); reset(); c.fillText(text, cx, cy);
+        } else glow([34, 14, 3], col, mixHex(col, "#ffffff", 0.6));
+      } else if (st.type === "neon") {
+        if (!night) {
+          c.shadowColor = "rgba(0,0,0,.35)"; c.shadowBlur = 8; c.shadowOffsetY = 4;
+          c.fillStyle = mixHex(col, "#ededed", 0.65); c.fillText(text, cx, cy); reset();
+        } else glow([60, 30, 14, 6, 2], col, "#ffffff");
+      } else {
+        const tw = c.measureText(text).width, px = fs * 0.55, py = fs * 0.34;
+        const bw = tw + px * 2, bh = fs * 1.05 + py * 2, bx = cx - bw / 2, by = cy - bh / 2, rr = fs * 0.14;
+        const box = () => { c.beginPath(); if (c.roundRect) c.roundRect(bx, by, bw, bh, rr); else c.rect(bx, by, bw, bh); };
+        if (!night) { c.shadowColor = "rgba(0,0,0,.45)"; c.shadowBlur = 22; c.shadowOffsetY = 10; }
+        else { c.shadowColor = col; c.shadowBlur = 70; }
+        c.fillStyle = night ? col : mixHex(col, "#000000", 0.08);
+        box(); c.fill(); reset();
+        if (night) { c.shadowColor = col; c.shadowBlur = 24; box(); c.fill(); reset(); }
+        c.lineWidth = fs * 0.07; c.strokeStyle = "#1a1717"; box(); c.stroke();
+        c.fillStyle = col === "#ff2a3a" || col === "#3ab4ff" ? "#ffffff" : "#141012";
+        c.fillText(text, cx, cy + fs * 0.03);
+      }
+    }
+
+    const half = (night, x0, x1) => { c.save(); c.beginPath(); c.rect(x0, 0, x1 - x0, H); c.clip(); wall(night); signDraw(night); c.restore(); };
+    half(false, 0, W * split);
+    half(true, W * split, W);
+    if (split > 0.02 && split < 0.98) { c.fillStyle = "rgba(255,255,255,.92)"; c.fillRect(W * split - 2, 0, 4, H); }
+    const pill = (label, x, y, alignRight) => {
+      c.font = '700 22px "Montserrat", sans-serif';
+      const w = c.measureText(label).width + 32, px2 = alignRight ? x - w : x;
+      c.fillStyle = "rgba(0,0,0,.55)"; c.beginPath(); if (c.roundRect) c.roundRect(px2, y, w, 40, 20); else c.rect(px2, y, w, 40); c.fill();
+      c.fillStyle = "#fff"; c.textAlign = "left"; c.textBaseline = "middle"; c.fillText(label, px2 + 16, y + 21);
+    };
+    if (split > 0.12) pill("Siang", 22, 22, false);
+    if (split < 0.88) pill("Malam", W - 22, 22, true);
+    pill("Simulasi · CV Armada Advertising", W - 22, H - 62, true);
+
+    cv.toBlob(async (blob) => {
+      if (!blob) { toast("Gagal membuat gambar"); return; }
+      const name = "desain-signage-" + (text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "armada") + ".png";
+      const file = new File([blob], name, { type: "image/png" });
+      try {
+        if (isMobile() && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Desain signage saya" });
+          return;
+        }
+      } catch (e) { if (e && e.name === "AbortError") return; }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.textContent = name;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      toast("Gambar tersimpan ✓ — kirim ke WA kami ya");
+    }, "image/png");
+  }
+  const simSave = $("#simSave");
+  if (simSave) simSave.addEventListener("click", () => { simSave.classList.add("is-busy"); exportSim().finally(() => setTimeout(() => simSave.classList.remove("is-busy"), 400)); });
+
   /* ---------- go ---------- */
   observeReveal();
   // hero elements: reveal (after intro, if any)
@@ -1818,6 +2186,7 @@
       return;
     }
     if (raw === "produk/cari") { $("#produk").scrollIntoView(); openQuiz(); return; }
+    if (raw === "chat") { setTimeout(openChat, 400); return; }
     const h = decodeURIComponent(raw);
     let m;
     if ((m = h.match(/^produk\/(.+)$/))) {
