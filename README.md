@@ -36,6 +36,13 @@ robots.txt, sitemap.xml → SEO (ganti domain!)
 - Judul muncul per kata, dan timeline "Cara Pesan" menyala saat di-scroll
 - Kursor berlabel di desktop, dan papan neon hero bisa diketuk untuk ganti warna
 - PWA: bisa dibuka offline setelah kunjungan pertama (khusus https)
+- **Ilustrasi otomatis** (`assets/js/scenes.js`) untuk tiap kategori: toko dengan neon box, gedung dengan huruf timbul, billboard, pylon, fasad ACP, lobby, dan mobil branding. Tampil selama foto asli belum ada, dan otomatis diganti saat foto ditambahkan.
+- **Hero**: ilustrasi toko malam hari dengan papan ARMADA, efek parallax mengikuti mouse, dan lampu etalase/OPEN yang ikut menyala
+- **Strip produk** kuning bisa diklik (berhenti saat disentuh mouse; di HP bisa digeser)
+- **Portofolio masonry** tanpa celah, dengan tombol "Lihat lebih banyak" (9 di desktop, 6 di HP)
+- **Chat cepat WA**: tombol WhatsApp membuka popup dengan pilihan topik (tanya harga, survei lokasi, konsultasi, progres pesanan) atau tulis pesan sendiri
+- Navigasi: penanda menu aktif yang bergeser, titik navigasi section di kanan (desktop), tombol kembali ke atas
+- Di HP: header dan tab bar bersembunyi saat scroll ke bawah dan muncul lagi saat scroll ke atas
 
 ## Yang WAJIB diganti dulu
 Buka `assets/js/data.js`:
@@ -45,7 +52,7 @@ Buka `assets/js/data.js`:
 ## Ganti foto portofolio
 1. Simpan foto dari Instagram (atau HP) ke `assets/img/portfolio/`, beri nama `p1.jpg`, `p2.jpg`, dst.
 2. Di `data.js` bagian `PORTFOLIO`, sesuaikan `title`, `category`, dan `place`.
-3. Foto yang belum ada otomatis tampil sebagai ilustrasi "Foto menyusul".
+3. Foto yang belum ada otomatis tampil sebagai ilustrasi bertanda "Ilustrasi".
 
 Tips:
 - Pakai JPG yang sudah dikecilkan, maksimal lebar sekitar 1600px dan ukuran di bawah 400 KB.

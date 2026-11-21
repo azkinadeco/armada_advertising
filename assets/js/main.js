@@ -84,12 +84,20 @@
     container.appendChild(img);
   }
 
-  function placeholder(cat, icon) {
+  function placeholder(cat, icon, seed = 0) {
+    if (window.ArmadaScene) {
+      return `<div class="ph ph-scene" data-cat="${esc(cat)}">${window.ArmadaScene.render(cat, seed)}<span class="ph-tag">Ilustrasi</span></div>`;
+    }
     return `<div class="ph" data-cat="${esc(cat)}">
       <span class="ph-word" aria-hidden="true">${esc(cat)}</span>
       <svg class="ph-icon" aria-hidden="true"><use href="#p-${icon}"/></svg>
       <span class="ph-tag">Foto menyusul</span>
     </div>`;
+  }
+
+  function productScene(p) {
+    if (window.ArmadaScene && p.category) return window.ArmadaScene.render(p.category, PRODUCTS.indexOf(p) + 3);
+    return `<svg aria-hidden="true"><use href="#p-${p.icon}"/></svg>`;
   }
 
   const catIcon = {
@@ -100,8 +108,13 @@
   /* ---------- marquee ---------- */
   const tri = `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z" fill="#B5141D"/><path d="M50 4L61 68L2 96z" fill="#DA1C24"/><path d="M50 4L98 96L61 68z" fill="#8A0D16"/></svg>`;
   const mq = $("#marquee");
-  const mqItems = PRODUCTS.map((p) => `<span>${esc(p.name)} ${tri}</span>`).join("");
-  mq.innerHTML = mqItems + mqItems;
+  const mqItem = (p, i, dup) =>
+    `<button type="button" class="mq-item${dup ? " mq-dup" : ""}" data-p="${i}"${dup ? ' tabindex="-1" aria-hidden="true"' : ""}>${esc(p.name)} ${tri}</button>`;
+  mq.innerHTML = PRODUCTS.map((p, i) => mqItem(p, i, false)).join("") + PRODUCTS.map((p, i) => mqItem(p, i, true)).join("");
+  mq.addEventListener("click", (e) => {
+    const b = e.target.closest(".mq-item");
+    if (b) openSheet(+b.dataset.p);
+  });
 
   /* ---------- hero rotator ---------- */
   const rot = $("#rotator");
@@ -159,12 +172,16 @@
       const r = sign.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      sign.style.setProperty("--ry", `${x * 14}deg`);
-      sign.style.setProperty("--rx", `${-y * 12}deg`);
+      sign.style.setProperty("--ry", `${x * 8}deg`);
+      sign.style.setProperty("--rx", `${-y * 6}deg`);
+      sign.style.setProperty("--px", x.toFixed(3));
+      sign.style.setProperty("--py", y.toFixed(3));
     });
     wrap.addEventListener("pointerleave", () => {
       sign.style.setProperty("--ry", "0deg");
       sign.style.setProperty("--rx", "0deg");
+      sign.style.setProperty("--px", "0");
+      sign.style.setProperty("--py", "0");
     });
   }
 
@@ -178,6 +195,7 @@
     const h = document.documentElement.scrollHeight - innerHeight;
     bar.style.transform = `scaleX(${h > 0 ? y / h : 0})`;
     updateSteps();
+    updateChrome(y);
     ticking = false;
   }
   function updateSteps() {
@@ -202,6 +220,8 @@
         navLinks.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === `#${id}`));
         const tabId = { simulasi: "produk", kenapa: "produk", proses: "kontak", faq: "kontak" }[id] || id;
         tabLinks.forEach((a) => a.classList.toggle("is-active", a.dataset.tab === tabId));
+        document.querySelectorAll(".dots a").forEach((a) => a.classList.toggle("is-active", a.dataset.id === id));
+        movePill();
       });
     },
     { rootMargin: "-45% 0px -50% 0px" }
@@ -247,7 +267,7 @@
 
   gallery.innerHTML = PORTFOLIO.map(
     (p, i) => `<button data-cursor="Lihat" class="work reveal${p.featured ? " is-featured" : p.wide ? " is-wide" : ""}" data-i="${i}" data-cat="${esc(p.category)}" aria-label="Lihat ${esc(p.title)}">
-      <div class="work-media">${placeholder(p.category, catIcon[p.category] || "box")}</div>
+      <div class="work-media">${placeholder(p.category, catIcon[p.category] || "box", i)}</div>
       <div class="work-info">
         <div><span class="work-cat">${esc(p.category)}${p.place ? " · " + esc(p.place) : ""}</span><span class="work-title">${esc(p.title)}</span></div>
         <span class="work-zoom"><svg class="i"><use href="#i-arrow"/></svg></span>
@@ -268,18 +288,39 @@
       c.classList.toggle("is-active", on);
       c.setAttribute("aria-selected", on);
     });
-    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    const chipRow = btn.parentElement;
+    chipRow.scrollTo({ left: btn.offsetLeft - (chipRow.clientWidth - btn.offsetWidth) / 2, behavior: "smooth" });
+    galLimit = pageSize();
+    applyFilter(true);
+  });
+
+  let galLimit = 0;
+  const pageSize = () => (isMobile() ? 6 : 9);
+  const moreBtn = $("#galMore");
+  function applyFilter(animate) {
+    if (!galLimit) galLimit = pageSize();
     visibleList = [];
+    let shown = 0;
     $$(".work", gallery).forEach((el) => {
-      const show = activeCat === "Semua" || el.dataset.cat === activeCat;
-      el.classList.toggle("is-hidden", !show);
-      el.classList.add("is-visible");
-      if (show) {
-        visibleList.push(+el.dataset.i);
-        el.classList.add("is-entering");
+      const match = activeCat === "Semua" || el.dataset.cat === activeCat;
+      const within = match && shown < galLimit;
+      if (match) visibleList.push(+el.dataset.i);
+      if (within) shown++;
+      const wasHidden = el.classList.contains("is-hidden");
+      el.classList.toggle("is-hidden", !within);
+      if (within && (animate || wasHidden)) {
+        el.classList.add("is-visible", "is-entering");
         requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove("is-entering")));
       }
     });
+    const left = visibleList.length - shown;
+    moreBtn.hidden = left <= 0;
+    moreBtn.firstElementChild.textContent = "Lihat " + left + " karya lainnya";
+  }
+  applyFilter(false);
+  moreBtn.addEventListener("click", () => {
+    galLimit += pageSize();
+    applyFilter(false);
   });
 
   /* ---------- lightbox ---------- */
@@ -322,7 +363,7 @@
   function renderLb(dir = 0) {
     const p = PORTFOLIO[visibleList[lbPos]];
     lbMedia.classList.remove("has-img", "swap");
-    lbMedia.innerHTML = placeholder(p.category, catIcon[p.category] || "box");
+    lbMedia.innerHTML = placeholder(p.category, catIcon[p.category] || "box", visibleList[lbPos]);
     if (imgCache[p.image] !== false) loadImage(p.image, lbMedia, p.title);
     if (dir) {
       lbMedia.style.setProperty("--dir", `${dir * 30}px`);
@@ -446,7 +487,7 @@
     (p, i) => `<button data-cursor="Detail" class="product reveal" data-i="${i}" aria-label="Detail ${esc(p.name)}">
       <div class="product-visual">
         <span class="product-no">${String(i + 1).padStart(2, "0")}</span>
-        <svg aria-hidden="true"><use href="#p-${p.icon}"/></svg>
+        ${productScene(p)}
       </div>
       <div class="product-body">
         <div><span class="product-name">${esc(p.name)}</span><span class="product-tag">${esc(p.tagline)}</span></div>
@@ -477,7 +518,7 @@
     const p = PRODUCTS[curProduct];
     sheetBody.innerHTML = `<div class="pd">
       <div class="product-visual pd-visual" id="pdVisual">
-        <svg aria-hidden="true"><use href="#p-${p.icon}"/></svg>
+        ${productScene(p)}
       </div>
       <div class="pd-info">
         <p class="pd-tagline">${esc(p.tagline)}</p>
@@ -489,7 +530,7 @@
           const rel = PORTFOLIO.map((w, k) => [w, k]).filter(([w]) => p.category && w.category === p.category).slice(0, 6);
           if (!rel.length) return "";
           return `<div class="pd-rel"><p class="sim-label">Karya ${esc(p.name)} kami</p><div class="pd-rel-row">${rel
-            .map(([w, k]) => `<button class="pd-rel-item" data-work="${k}" aria-label="Lihat ${esc(w.title)}">${placeholder(w.category, catIcon[w.category] || "box")}</button>`)
+            .map(([w, k]) => `<button class="pd-rel-item" data-work="${k}" aria-label="Lihat ${esc(w.title)}">${placeholder(w.category, catIcon[w.category] || "box", k)}</button>`)
             .join("")}</div></div>`;
         })()}
         <div class="pd-actions">
@@ -948,7 +989,7 @@
         ranked.map(({ i }, k) => {
           const p = PRODUCTS[i];
           return '<article class="quiz-card">' + (k === 0 ? '<span class="quiz-badge">★ Paling cocok</span>' : "") +
-            '<div class="product-visual"><svg aria-hidden="true"><use href="#p-' + p.icon + '"/></svg></div>' +
+            '<div class="product-visual">' + productScene(p) + "</div>" +
             '<div class="quiz-card-body"><div><h4>' + esc(p.name) + "</h4><p>" + esc(p.tagline) + "</p></div>" +
             '<div class="quiz-card-actions"><button class="btn btn-soft" data-detail="' + i + '">Detail</button>' +
             '<a class="btn btn-dark" data-wa="Halo Armada Advertising, saya isi kuis di website (' + esc(ansText) + ") dan direkomendasikan " + esc(p.name) + '. Boleh minta info harganya?" href="#"><svg class="i"><use href="#i-wa"/></svg> Tanya</a></div>' +
@@ -1099,6 +1140,106 @@
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
   }
+
+  /* =========================================================
+     HERO CITY + CHROME (nav pill, dots, to-top, hide on scroll)
+     ========================================================= */
+  if (window.ArmadaScene) $("#heroCity").innerHTML = window.ArmadaScene.city(11);
+
+  function movePill(target) {
+    const nav = document.querySelector(".nav");
+    const pill = nav && nav.querySelector(".nav-pill");
+    if (!pill) return;
+    const a = target || nav.querySelector("a.is-active");
+    if (!a) { pill.style.opacity = "0"; return; }
+    pill.style.opacity = "1";
+    pill.style.width = a.offsetWidth + "px";
+    pill.style.transform = "translateX(" + a.offsetLeft + "px)";
+  }
+  const navEl = $(".nav");
+  if (navEl) {
+    navEl.addEventListener("mouseover", (e) => { const a = e.target.closest("a"); if (a) movePill(a); });
+    navEl.addEventListener("mouseleave", () => movePill());
+    window.addEventListener("resize", () => movePill());
+  }
+
+  const toTop = $("#toTop");
+  toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" }));
+  function updateChrome(y) {
+    const last = updateChrome.last || 0;
+    if (Math.abs(y - last) > 6) {
+      document.body.classList.toggle("nav-hidden", y > last && y > 240 && !document.body.classList.contains("chat-open"));
+      updateChrome.last = y;
+    }
+    const tt = document.getElementById("toTop");
+    if (tt) tt.classList.toggle("is-show", y > 900);
+  }
+
+  /* =========================================================
+     QUICK CHAT (WhatsApp)
+     ========================================================= */
+  const chat = $("#chat");
+  const CHAT_OPTS = [
+    ["💰", "Tanya harga", "Halo Armada Advertising, saya mau tanya harga signage. Rencananya untuk: "],
+    ["📍", "Minta survei lokasi", "Halo Armada Advertising, saya mau minta survei lokasi untuk pemasangan signage. Lokasi saya di: "],
+    ["🎨", "Konsultasi desain gratis", "Halo Armada Advertising, saya mau konsultasi desain signage (gratis). Usaha saya: "],
+    ["📦", "Tanya progres pesanan", "Halo Armada Advertising, saya mau menanyakan progres pesanan atas nama: "],
+  ];
+  $("#chatOpts").innerHTML = CHAT_OPTS.map(([em, label], k) =>
+    '<button type="button" class="chat-opt" data-opt="' + k + '"><span aria-hidden="true">' + em + "</span>" + esc(label) + "</button>"
+  ).join("");
+  let chatTimer = null;
+  function openChat() {
+    chat.classList.add("is-open");
+    chat.setAttribute("aria-hidden", "false");
+    document.body.classList.add("chat-open");
+    document.body.classList.remove("nav-hidden");
+    const st = typeof openStatus === "function" ? openStatus() : null;
+    const cs = $("#chatStatus");
+    if (st) {
+      cs.classList.toggle("is-open", st.open);
+      cs.lastElementChild.textContent = st.open ? "Online · biasanya membalas cepat" : "Sedang tutup · dibalas " + st.next;
+    }
+    const body = $("#chatBody");
+    body.classList.remove("is-ready");
+    clearTimeout(chatTimer);
+    chatTimer = setTimeout(() => body.classList.add("is-ready"), reduced ? 0 : 750);
+    setTimeout(() => { if (!isMobile()) $("#chatMsg").focus({ preventScroll: true }); }, 300);
+  }
+  function closeChat() {
+    chat.classList.remove("is-open");
+    chat.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("chat-open");
+  }
+  const toggleChat = (e) => {
+    e.preventDefault();
+    chat.classList.contains("is-open") ? closeChat() : openChat();
+  };
+  $$(".fab, .tab-wa").forEach((el) => el.addEventListener("click", toggleChat));
+  chat.addEventListener("click", (e) => {
+    if (e.target.closest("[data-chat-close]")) return closeChat();
+    const o = e.target.closest("[data-opt]");
+    if (o) {
+      const input = $("#chatMsg");
+      const extra = input.value.trim();
+      window.open(waLink(CHAT_OPTS[+o.dataset.opt][2] + extra), "_blank", "noopener");
+      closeChat();
+    }
+  });
+  $("#chatForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = $("#chatMsg").value.trim();
+    if (!v) { toast("Tulis pesan dulu, atau pilih topik di atas"); return; }
+    window.open(waLink("Halo Armada Advertising, " + v), "_blank", "noopener");
+    $("#chatMsg").value = "";
+    closeChat();
+  });
+  document.addEventListener("click", (e) => {
+    if (!chat.classList.contains("is-open")) return;
+    if (e.target.closest(".chat-card, .fab, .tab-wa")) return;
+    closeChat();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && chat.classList.contains("is-open")) closeChat(); });
 
   /* ---------- go ---------- */
   observeReveal();

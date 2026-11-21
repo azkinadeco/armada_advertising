@@ -41,6 +41,7 @@
         <span class="brand-sub">ADVERTISING</span>
       </a>
       <nav class="nav" aria-label="Menu utama">
+        <span class="nav-pill" aria-hidden="true"></span>
         <a href="#karya">Portofolio</a>
         <a href="#produk">Produk</a>
         <a href="#simulasi">Simulasi</a>
@@ -85,8 +86,16 @@
         <!-- Interactive neon sign -->
         <div class="sign-wrap reveal">
           <div class="sign is-on" id="sign" data-cursor="Ketuk" role="button" tabindex="0" aria-label="Ganti warna lampu neon">
-            <div class="sign-wall" aria-hidden="true"></div>
-            <div class="sign-cable" aria-hidden="true"></div>
+            <div class="hs hs-sky" aria-hidden="true"></div>
+            <div class="hs hs-moon" aria-hidden="true"></div>
+            <svg class="hs hs-city" id="heroCity" viewBox="0 0 400 160" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
+            <div class="hs hs-facade" aria-hidden="true">
+              <span class="hs-cornice"></span>
+              <span class="hs-awning"></span>
+              <span class="hs-window"></span>
+              <span class="hs-door"></span>
+            </div>
+            <div class="hs hs-ground" aria-hidden="true"></div>
             <div class="sign-board" id="signBoard">
               <svg class="sign-tri" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z"/><path d="M50 4L61 68L2 96z"/><path d="M50 4L98 96L61 68z"/></svg>
               <span class="sign-text">
@@ -110,7 +119,7 @@
     </section>
 
     <!-- ============ MARQUEE ============ -->
-    <div class="marquee" aria-hidden="true">
+    <div class="marquee" role="region" aria-label="Pilih produk">
       <div class="marquee-track" id="marquee"></div>
     </div>
 
@@ -127,6 +136,9 @@
 
         <div class="chips reveal" id="filters" role="tablist" aria-label="Filter portofolio"></div>
         <div class="gallery" id="gallery"></div>
+        <div class="gal-more">
+          <button class="btn btn-ghost" id="galMore" type="button" hidden><span>Lihat karya lainnya</span> <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+        </div>
 
         <a class="btn btn-outline btn-block show-sm" href="#" data-ig target="_blank" rel="noopener">
           <svg class="i" aria-hidden="true"><use href="#i-ig"/></svg> Lihat semua di Instagram
@@ -327,6 +339,41 @@
     </div>
   </footer>
 
+  <!-- Section dots (desktop) -->
+  <nav class="dots" id="dots" aria-label="Lompat ke bagian">
+    <a href="#home" data-id="home"><span>Beranda</span></a>
+    <a href="#karya" data-id="karya"><span>Portofolio</span></a>
+    <a href="#produk" data-id="produk"><span>Produk</span></a>
+    <a href="#simulasi" data-id="simulasi"><span>Simulasi</span></a>
+    <a href="#kenapa" data-id="kenapa"><span>Kenapa Kami</span></a>
+    <a href="#proses" data-id="proses"><span>Cara Pesan</span></a>
+    <a href="#faq" data-id="faq"><span>FAQ</span></a>
+    <a href="#kontak" data-id="kontak"><span>Kontak</span></a>
+  </nav>
+
+  <button class="totop" id="toTop" type="button" aria-label="Kembali ke atas"><svg class="i" aria-hidden="true"><use href="#i-up"/></svg></button>
+
+  <!-- Quick chat -->
+  <div class="chat" id="chat" aria-hidden="true">
+    <div class="chat-card" role="dialog" aria-modal="false" aria-labelledby="chatName">
+      <div class="chat-head">
+        <span class="chat-av"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z" fill="#B5141D"/><path d="M50 4L61 68L2 96z" fill="#DA1C24"/><path d="M50 4L98 96L61 68z" fill="#8A0D16"/></svg></span>
+        <div class="chat-who"><b id="chatName">Armada Advertising</b><span class="status" id="chatStatus"><i></i><span>Biasanya membalas cepat</span></span></div>
+        <button class="icon-btn chat-x" type="button" data-chat-close aria-label="Tutup chat"><svg class="i"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="chat-body" id="chatBody">
+        <div class="chat-typing" id="chatTyping" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="chat-bubble" id="chatBubble">Halo! 👋 Ada yang bisa kami bantu? Pilih topik di bawah atau tulis pesanmu.</div>
+        <div class="chat-opts" id="chatOpts"></div>
+      </div>
+      <form class="chat-input" id="chatForm">
+        <label class="sr-only" for="chatMsg">Tulis pesan</label>
+        <input id="chatMsg" type="text" placeholder="Tulis pesan…" autocomplete="off" maxlength="300" />
+        <button class="chat-send" type="submit" aria-label="Kirim lewat WhatsApp"><svg class="i"><use href="#i-send"/></svg></button>
+      </form>
+    </div>
+  </div>
+
   <!-- Floating WA (desktop) -->
   <a class="fab" href="#" data-wa="Halo Armada Advertising, saya mau tanya soal signage." aria-label="Chat WhatsApp">
     <svg class="i" aria-hidden="true"><use href="#i-wa"/></svg>
@@ -404,6 +451,8 @@
       <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
       <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+      <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+      <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></symbol>
       <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4"/></symbol>
       <!-- product icons -->
       <symbol id="p-box" viewBox="0 0 64 64"><rect x="8" y="16" width="48" height="28" rx="4"/><path d="M18 30h28M22 24h20M24 36h16"/><path d="M20 44v8M44 44v8"/></symbol>
@@ -418,6 +467,7 @@
   </svg>
 
   <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/scenes.js" defer></script>
   <script src="assets/js/main.js" defer></script>
 </body>
 </html>
