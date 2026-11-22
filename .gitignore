@@ -1,3 +1,6 @@
 .DS_Store
 **/_original/
 node_modules/
+
+# foto asli (berisi metadata EXIF/GPS) — versi web ada di assets/img/portfolio
+porto image/

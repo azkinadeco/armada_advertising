@@ -66,7 +66,7 @@
 
   /* ---------- image loader with placeholder fallback ---------- */
   const imgCache = {};
-  function loadImage(src, container, alt, cb) {
+  function loadImage(src, container, alt, cb, errCb) {
     if (!src) return;
     const img = new Image();
     img.alt = alt || "";
@@ -80,6 +80,7 @@
     img.onerror = () => {
       imgCache[src] = false;
       img.remove();
+      if (errCb) errCb();
     };
     img.src = src;
     container.appendChild(img);
@@ -99,6 +100,9 @@
     </div>`;
   }
 
+  function productMedia(p) {
+    return p.image ? `<img class="pv-img" src="${esc(p.image)}" alt="">` : productScene(p);
+  }
   function productScene(p, lazy) {
     if (window.ArmadaScene && p.category && lazy) return `<span class="scene-slot" data-cat="${esc(p.category)}" data-seed="${PRODUCTS.indexOf(p) + 3}"></span>`;
     if (window.ArmadaScene && p.category) return window.ArmadaScene.render(p.category, PRODUCTS.indexOf(p) + 3);
@@ -271,17 +275,26 @@
     .join("");
 
   gallery.innerHTML = PORTFOLIO.map(
-    (p, i) => `<button data-cursor="Lihat" class="work reveal${p.featured ? " is-featured" : p.wide ? " is-wide" : ""}" data-i="${i}" data-cat="${esc(p.category)}" aria-label="Lihat ${esc(p.title)}">
-      <div class="work-media">${placeholder(p.category, catIcon[p.category] || "box", i, true)}</div>
+    (p, i) => `<button data-cursor="Lihat" class="work reveal${p.ratio ? " has-ratio" : p.featured ? " is-featured" : p.wide ? " is-wide" : ""}" data-i="${i}" data-cat="${esc(p.category)}" aria-label="Lihat ${esc(p.title)}"${p.ratio ? ` style="aspect-ratio:${esc(p.ratio)}"` : ""}>
+      <div class="work-media">${p.image ? '<span class="photo-skel"></span>' : placeholder(p.category, catIcon[p.category] || "box", i, true)}</div>
       <div class="work-info">
         <div><span class="work-cat">${esc(p.category)}${p.place ? " · " + esc(p.place) : ""}</span><span class="work-title">${esc(p.title)}</span></div>
         <span class="work-zoom"><svg class="i"><use href="#i-arrow"/></svg></span>
       </div>
     </button>`
   ).join("");
+  function loadWorkPhoto(el) {
+    const i = +el.dataset.i, p = PORTFOLIO[i], media = $(".work-media", el);
+    loadImage(p.thumb || p.image, media, "",
+      () => { const sk = media.querySelector(".photo-skel"); if (sk) sk.remove(); },
+      () => { media.innerHTML = placeholder(p.category, catIcon[p.category] || "box", i); });
+  }
+  const photoIO = "IntersectionObserver" in window
+    ? new IntersectionObserver((en) => en.forEach((x) => { if (!x.isIntersecting) return; photoIO.unobserve(x.target); loadWorkPhoto(x.target); }), { rootMargin: "700px 0px" })
+    : null;
   $$(".work", gallery).forEach((el) => {
-    const p = PORTFOLIO[+el.dataset.i];
-    loadImage(p.image, $(".work-media", el), p.title);
+    if (!PORTFOLIO[+el.dataset.i].image) return;
+    if (photoIO) photoIO.observe(el); else loadWorkPhoto(el);
   });
 
   filters.addEventListener("click", (e) => {
@@ -300,7 +313,7 @@
   });
 
   let galLimit = 0;
-  const pageSize = () => (isMobile() ? 6 : 9);
+  const pageSize = () => (isMobile() ? 8 : 12);
   const moreBtn = $("#galMore");
   function applyFilter(animate) {
     if (!galLimit) galLimit = pageSize();
@@ -369,19 +382,23 @@
     const p = PORTFOLIO[visibleList[lbPos]];
     lbMedia.classList.remove("has-img", "swap");
     setZoom(1);
-    lbMedia.innerHTML = placeholder(p.category, catIcon[p.category] || "box", visibleList[lbPos]);
+    lbMedia.innerHTML = p.image ? '<span class="photo-skel"></span>' : placeholder(p.category, catIcon[p.category] || "box", visibleList[lbPos]);
+    if (p.ratio) { const [rw, rh] = String(p.ratio).split("/").map(Number); if (rw && rh) lbMedia.style.setProperty("--r", (rw / rh).toFixed(4)); }
+    else lbMedia.style.removeProperty("--r");
     const ba = $("#lbBA");
     lbMedia.classList.remove("show-before");
     ba.setAttribute("aria-pressed", "false");
     ba.lastElementChild.textContent = "Lihat sebelum";
     const beforeHTML = p.before
       ? `<img src="${esc(p.before)}" alt="Sebelum: ${esc(p.title)}" style="opacity:1">`
-      : window.ArmadaScene ? window.ArmadaScene.render(p.category, visibleList[lbPos], { bare: true }) : "";
+      : !p.image && window.ArmadaScene ? window.ArmadaScene.render(p.category, visibleList[lbPos], { bare: true }) : "";
     if (beforeHTML) lbMedia.insertAdjacentHTML("beforeend", `<div class="lb-before">${beforeHTML}<span class="lb-ba-tag">Sebelum dipasang</span></div>`);
-    ba.hidden = !beforeHTML || !(p.before || imgCache[p.image] !== true);
-    if (imgCache[p.image] !== false) loadImage(p.image, lbMedia, p.title, () => {
-      if (!p.before) { ba.hidden = true; lbMedia.classList.remove("show-before"); }
-    });
+    ba.hidden = !beforeHTML;
+    const dropSkel = () => { const sk = lbMedia.querySelector(".photo-skel"); if (sk) sk.remove(); };
+    const lbFallback = () => { if (!lbMedia.querySelector("img")) lbMedia.insertAdjacentHTML("afterbegin", placeholder(p.category, catIcon[p.category] || "box", visibleList[lbPos])); };
+    if (p.thumb && p.thumb !== p.image) loadImage(p.thumb, lbMedia, p.title, dropSkel);
+    if (p.image && imgCache[p.image] !== false) loadImage(p.image, lbMedia, p.title, dropSkel, lbFallback);
+    else if (p.image) lbFallback();
     if (dir) {
       lbMedia.style.setProperty("--dir", `${dir * 30}px`);
       void lbMedia.offsetWidth;
@@ -506,7 +523,7 @@
       <div class="product-visual">
         <span class="product-no">${String(i + 1).padStart(2, "0")}</span>
         ${p.badge ? `<span class="product-badge">${esc(p.badge)}</span>` : ""}
-        ${productScene(p, true)}
+        ${p.image ? '<span class="photo-skel"></span>' : productScene(p, true)}
       </div>
       <div class="product-body">
         <div><span class="product-name">${esc(p.name)}</span><span class="product-tag">${esc(p.tagline)}</span>${p.startPrice ? `<span class="product-price">Mulai ${esc(p.startPrice)}</span>` : ""}</div>
@@ -516,7 +533,10 @@
   ).join("");
   $$(".product", productsEl).forEach((el) => {
     const p = PRODUCTS[+el.dataset.i];
-    loadImage(p.image, $(".product-visual", el), p.name);
+    const pv = $(".product-visual", el);
+    loadImage(p.image, pv, "",
+      () => { const sk = pv.querySelector(".photo-skel"); if (sk) sk.remove(); },
+      () => { const sk = pv.querySelector(".photo-skel"); if (sk) sk.outerHTML = productScene(p); });
     el.addEventListener("pointermove", (e) => {
       const r = el.getBoundingClientRect();
       el.style.setProperty("--mx", `${e.clientX - r.left}px`);
@@ -551,7 +571,7 @@
           const rel = PORTFOLIO.map((w, k) => [w, k]).filter(([w]) => p.category && w.category === p.category).slice(0, 6);
           if (!rel.length) return "";
           return `<div class="pd-rel"><p class="sim-label">Karya ${esc(p.name)} kami</p><div class="pd-rel-row">${rel
-            .map(([w, k]) => `<button class="pd-rel-item" data-work="${k}" aria-label="Lihat ${esc(w.title)}">${placeholder(w.category, catIcon[w.category] || "box", k)}</button>`)
+            .map(([w, k]) => `<button class="pd-rel-item" data-work="${k}" aria-label="Lihat ${esc(w.title)}">${w.image ? '<span class="photo-skel"></span>' : placeholder(w.category, catIcon[w.category] || "box", k)}</button>`)
             .join("")}</div></div>`;
         })()}
         <div class="pd-price">${p.startPrice ? `<span>Harga mulai</span><b>${esc(p.startPrice)}</b>` : `<span>Harga</span><b>Sesuai ukuran &amp; bahan</b>`}<small>Hitung gratis via WhatsApp</small></div>
@@ -570,7 +590,7 @@
     </div>`;
     bindLinks(sheetBody);
     loadImage(p.image, $("#pdVisual"), p.name);
-    $$(".pd-rel-item", sheetBody).forEach((el) => { const w = PORTFOLIO[+el.dataset.work]; loadImage(w.image, el, w.title); });
+    $$(".pd-rel-item", sheetBody).forEach((el) => { const w = PORTFOLIO[+el.dataset.work]; loadImage(w.thumb || w.image, el, "", () => { const sk = el.querySelector(".photo-skel"); if (sk) sk.remove(); }); });
     sheetPanel.scrollTop = 0;
     if (sheet.classList.contains("is-open")) setHash("produk/" + p.id);
   }
@@ -1048,7 +1068,7 @@
         ranked.map(({ i }, k) => {
           const p = PRODUCTS[i];
           return '<article class="quiz-card">' + (k === 0 ? '<span class="quiz-badge">★ Paling cocok</span>' : "") +
-            '<div class="product-visual">' + productScene(p) + "</div>" +
+            '<div class="product-visual">' + productMedia(p) + "</div>" +
             '<div class="quiz-card-body"><div><h4>' + esc(p.name) + "</h4><p>" + esc(p.tagline) + "</p></div>" +
             '<div class="quiz-card-actions"><button class="btn btn-soft" data-detail="' + i + '">Detail</button>' +
             '<a class="btn btn-dark" data-wa="Halo Armada Advertising, saya isi kuis di website (' + esc(ansText) + ") dan direkomendasikan " + esc(p.name) + '. Boleh minta info harganya?" href="#"><svg class="i"><use href="#i-wa"/></svg> Tanya</a></div>' +
@@ -1525,7 +1545,7 @@
     sheetBody.innerHTML =
       '<div class="cmp"><p class="quiz-kick">Perbandingan</p><h3 class="quiz-q" id="sheetTitle">' + items.map((p) => esc(p.name)).join(" vs ") + "</h3>" +
       '<div class="cmp-scroll"><table class="cmp-table" style="--n:' + items.length + '"><thead><tr><td></td>' +
-      items.map((p) => '<th scope="col"><div class="product-visual cmp-vis">' + productScene(p) + "</div><b>" + esc(p.name) + "</b><small>" + esc(p.tagline) + "</small></th>").join("") +
+      items.map((p) => '<th scope="col"><div class="product-visual cmp-vis">' + productMedia(p) + "</div><b>" + esc(p.name) + "</b><small>" + esc(p.tagline) + "</small></th>").join("") +
       "</tr></thead><tbody>" +
       keys.map((k) => row(esc(k), (p) => cell(p, k))).join("") +
       row("Cocok untuk", (p) => (p.uses || []).map(esc).join(", ")) +
@@ -1571,7 +1591,7 @@
       '<p class="pc-note">Desain & konsultasi gratis · Produksi di workshop sendiri · Terima pemasangan</p></section>' +
       '<section class="pc-grid">' +
       PRODUCTS.map((p) =>
-        '<article class="pc-item"><div class="pc-vis">' + productScene(p) + "</div><div class=\"pc-body\"><h2>" + esc(p.name) + '</h2><p class="pc-tag">' + esc(p.tagline) + "</p><p>" + esc(p.desc) + "</p>" +
+        '<article class="pc-item"><div class="pc-vis">' + productMedia(p) + "</div><div class=\"pc-body\"><h2>" + esc(p.name) + '</h2><p class="pc-tag">' + esc(p.tagline) + "</p><p>" + esc(p.desc) + "</p>" +
         "<dl>" + p.specs.map(([k, v]) => "<div><dt>" + esc(k) + "</dt><dd>" + esc(v) + "</dd></div>").join("") + "</dl>" +
         '<p class="pc-uses"><b>Cocok untuk:</b> ' + (p.uses || []).map(esc).join(", ") + "</p>" +
         '<p class="pc-price">' + (p.startPrice ? "Harga mulai " + esc(p.startPrice) : "Harga sesuai ukuran & bahan — hitung gratis via WhatsApp") + "</p></div></article>"
@@ -1579,7 +1599,11 @@
       "</section>" +
       '<p class="pc-foot">CV Armada Advertising · wa.me/' + esc(SITE.whatsapp) + " · " + esc(SITE.instagramHandle || "") + "</p>";
     toast("Pilih \"Simpan sebagai PDF\" di jendela cetak");
-    setTimeout(() => window.print(), 350);
+    const pcImgs = $$("img", pc);
+    Promise.race([
+      Promise.all(pcImgs.map((im) => (im.complete ? 1 : new Promise((r) => { im.onload = im.onerror = r; })))),
+      new Promise((r) => setTimeout(r, 4000)),
+    ]).then(() => setTimeout(() => window.print(), 150));
   }
   $("#catalogBtn").addEventListener("click", printCatalog);
   window.addEventListener("afterprint", () => { $("#printCatalog").innerHTML = ""; });
@@ -1954,6 +1978,7 @@
         if (!en.isIntersecting) return;
         const el = en.target;
         sceneIO.unobserve(el);
+        if (el.closest(".has-img")) { el.outerHTML = ""; return; }
         el.outerHTML = window.ArmadaScene.render(el.dataset.cat, +el.dataset.seed || 0);
       });
     }, { rootMargin: "500px 0px" });

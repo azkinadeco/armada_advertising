@@ -78,6 +78,30 @@
     .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); opacity: 0; padding: 12px 18px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 700; font-size: 0.86rem; transition: all 0.3s; pointer-events: none; z-index: 20; }
     .toast.on { opacity: 1; transform: translate(-50%, 0); }
     .draft { font-size: 0.76rem; color: #a39d95; }
+    .upbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 14px 16px; border-radius: 16px; background: var(--ink); color: #fff; }
+    .upbar small { color: #a39d95; font-size: 0.8rem; }
+    .btn-up { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border-radius: 999px; background: var(--yellow); color: var(--ink); font-weight: 800; font-size: 0.88rem; cursor: pointer; }
+    .btn-up:focus-within { outline: 2px solid #fff; outline-offset: 2px; }
+    .btn-up input, .thumb-wrap input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .thumb-wrap { position: relative; display: grid; gap: 8px; }
+    .thumb-wrap .thumb { background-size: contain; background-color: #1a1718; }
+    .swap { display: inline-flex; justify-content: center; padding: 8px 12px; border-radius: 999px; border: 1px dashed var(--line); font-weight: 700; font-size: 0.8rem; cursor: pointer; background: #fff; }
+    .swap:hover { border-color: var(--ink); }
+    .pend { display: inline-block; padding: 3px 8px; border-radius: 999px; background: #fff4dc; color: var(--warn); font-size: 0.7rem; font-weight: 800; }
+    .ratio { font-size: 0.78rem; color: var(--muted); }
+    .btn[disabled] { opacity: 0.5; pointer-events: none; }
+    .busy { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; background: rgba(13, 11, 12, 0.55); }
+    .busy.on { display: grid; }
+    .busy div { padding: 18px 24px; border-radius: 18px; background: #fff; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .busy div::before { content: ""; width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--cream-2); border-top-color: var(--ink); animation: sp 0.8s linear infinite; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+    .steps-gh { margin: 0; padding-left: 20px; color: var(--muted); font-size: 0.88rem; display: grid; gap: 4px; }
+    .steps-gh a { color: var(--ink); font-weight: 700; }
+    .chk { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 600; }
+    .res { padding: 12px 14px; border-radius: 12px; font-size: 0.86rem; font-weight: 700; }
+    .res.ok { background: #e3f6ea; color: var(--ok); }
+    .res.err { background: #fde8e8; color: var(--red); }
+    .res a { color: inherit; }
     @media (max-width: 640px) {
       .body { grid-template-columns: 1fr; }
       .top { padding: 10px 12px; }
@@ -91,25 +115,27 @@
     <h1><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4L98 96H2z" fill="#B5141D"/><path d="M50 4L61 68L2 96z" fill="#DA1C24"/><path d="M50 4L98 96L61 68z" fill="#8A0D16"/></svg> Panel Data Website <small id="draftInfo" class="draft"></small></h1>
     <button class="btn" id="resetBtn" type="button" title="Buang perubahan & kembali ke data asli">↺ <span>Reset</span></button>
     <button class="btn" id="copyBtn" type="button">⧉ <span>Salin</span></button>
-    <a class="btn" href="index.html" target="_blank" rel="noopener">↗ <span>Lihat website</span></a>
-    <button class="btn btn-y" id="dlBtn" type="button">⬇ Unduh data.js</button>
+    <button class="btn" id="dlBtn" type="button">⬇ <span>Unduh data.js</span></button>
+    <button class="btn" id="previewBtn" type="button">👁 <span>Pratinjau</span></button>
+    <button class="btn btn-y" id="pubBtn" type="button">🚀 Terbitkan</button>
   </header>
 
   <main class="wrap">
     <div class="intro">
       <b>Cara pakai</b>
       <ol>
-        <li>Ubah data di bawah ini. Perubahan tersimpan otomatis sebagai draf di browser ini.</li>
-        <li>Klik <b style="display:inline">Unduh data.js</b>.</li>
-        <li>Ganti file <code>assets/js/data.js</code> dengan file hasil unduhan, lalu upload/push ke hosting.</li>
+        <li>Ubah teks, tambah foto karya, atau ganti foto produk. Semua perubahan tersimpan otomatis sebagai draf.</li>
+        <li>Klik <b style="display:inline">👁 Pratinjau</b> untuk melihat hasilnya di website (hanya terlihat oleh kamu).</li>
+        <li>Klik <b style="display:inline">🚀 Terbitkan</b> untuk mengirim perubahan + foto ke GitHub sekaligus. Pertama kali, isi token di tab <b style="display:inline">Terbitkan</b>.</li>
       </ol>
-      <p>Untuk foto: simpan file foto di <code>assets/img/portfolio/</code> atau <code>assets/img/products/</code>, lalu tulis nama filenya di kolom "File foto".</p>
+      <p>Tanpa GitHub? Pakai <b>Unduh data.js</b> lalu ganti file <code>assets/js/data.js</code> secara manual.</p>
     </div>
 
     <nav class="tabs" role="tablist" id="tabs"></nav>
     <section id="panels"></section>
   </main>
   <div class="toast" id="toast" role="status"></div>
+  <div class="busy" id="busy" role="status" aria-live="polite"><div id="busyText">Memproses…</div></div>
 
   <script src="assets/js/data.js"></script>
   <script>
@@ -121,13 +147,23 @@
       WHY: clone(window.WHY || []), FAQ: clone(window.FAQ || []), TESTIMONI: clone(window.TESTIMONI || []),
     };
     const KEY = "armada-admin-draft";
+    const hashOf = (str) => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return String(h >>> 0); };
+    const BASE = hashOf(JSON.stringify(ORIGINAL));
     let D = clone(ORIGINAL);
     try {
       const saved = JSON.parse(localStorage.getItem(KEY) || "null");
-      if (saved && saved.SITE) { D = Object.assign(clone(ORIGINAL), saved); }
+      if (saved && saved.SITE) {
+        const same = saved._base === BASE;
+        if (same || confirm("Ada draf lama yang dibuat sebelum data website diperbarui.\n\nOK = lanjutkan draf lama\nBatal = pakai data website terbaru")) {
+          D = Object.assign(clone(ORIGINAL), saved);
+        } else {
+          localStorage.setItem(KEY, "");
+        }
+      }
     } catch (e) {}
+    delete D._base;
 
-    const CATS = ["Neon Box", "Huruf Timbul", "Neon Flex", "Billboard", "Pylon", "Fasad ACP", "Indoor", "Branding"];
+    const CATS = ["Huruf Timbul", "Neon Box", "Neon Flex", "Billboard", "Pylon", "Fasad ACP", "Indoor", "Branding", "Event"];
     const ICONS = [["box", "Kotak"], ["type", "Huruf"], ["spark", "Neon"], ["board", "Billboard"], ["pylon", "Pylon"], ["layers", "Panel"], ["door", "Pintu"], ["car", "Mobil"]];
     const WHY_ICONS = [["pen", "Pena"], ["tool", "Alat"], ["shield", "Perisai"], ["pin", "Lokasi"], ["chat", "Chat"], ["clock", "Jam"]];
     const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -137,7 +173,7 @@
 
     function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 2200); }
     function save() {
-      try { localStorage.setItem(KEY, JSON.stringify(D)); $("#draftInfo").textContent = "· draf tersimpan " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }); } catch (e) {}
+      try { localStorage.setItem(KEY, JSON.stringify(Object.assign({ _base: BASE }, D))); $("#draftInfo").textContent = "· draf tersimpan " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }); } catch (e) {}
     }
     const getPath = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), D);
     function setPath(path, val) {
@@ -167,7 +203,15 @@
         rows.map((r, k) => '<div class="spec"><input type="text" data-path="' + path + "." + k + '.0" value="' + esc(r[0]) + '" placeholder="Nama (mis. Bahan)" /><input type="text" data-path="' + path + "." + k + '.1" value="' + esc(r[1]) + '" placeholder="Isi" /><button type="button" class="ib del" data-spec-del="' + path + "|" + k + '" aria-label="Hapus baris">×</button></div>').join("") +
         '</div><button type="button" class="addrow" data-spec-add="' + path + '">+ Tambah baris</button></div>';
     };
-    const thumb = (src) => '<div class="thumb" style="background-image:url(\'' + esc(src) + '\')" data-thumb="' + esc(src) + '">Foto belum ada<br/>(tampil ilustrasi)</div>';
+    const PENDING = new Map(); // path -> { blob, url }
+    const urlFor = (path) => (PENDING.get(path) || {}).url || path;
+    function saveBlobs() {
+      const m = {};
+      PENDING.forEach((v, k) => { m[k] = v.url; });
+      try { localStorage.setItem("armada-admin-blobs", JSON.stringify(m)); } catch (e) {}
+    }
+    const thumb = (src) => '<div class="thumb" style="background-image:url(\'' + esc(urlFor(src)) + '\')" data-thumb="' + esc(urlFor(src)) + '">Foto belum ada<br/>(tampil ilustrasi)</div>';
+    const pendBadge = (path) => (PENDING.has(path) ? ' <span class="pend">belum diterbitkan</span>' : "");
 
     /* ---------- panels ---------- */
     function warnsHTML() {
@@ -209,23 +253,25 @@
           fSelect(b + ".category", "Kategori (untuk ilustrasi & karya terkait)", CATS) + fSelect(b + ".icon", "Ikon", ICONS) +
           fText(b + ".startPrice", "Harga mulai (opsional)", { ph: "Rp 350.000 / m²" }) + fText(b + ".badge", "Badge (opsional)", { ph: "Terlaris" }) +
           fArea(b + ".desc", "Deskripsi") + fSpecs(b + ".specs") + fTags(b + ".uses", "Cocok untuk") +
-          fText(b + ".image", "File foto", { full: true, help: "Contoh: assets/img/products/neon-box.jpg" }) +
+          '<div class="f"><div class="thumb-wrap">' + thumb(p.image) + '<label class="swap">📷 Ganti foto<input type="file" accept="image/*" data-replace="PRODUCTS|' + i + '" /></label></div></div>' +
+          '<div class="f"><label>File foto' + pendBadge(p.image) + '</label><input type="text" data-path="' + b + '.image" value="' + esc(p.image) + '" /><small>Terisi otomatis saat ganti foto.</small></div>' +
           fText(b + ".id", "ID (untuk link)", { help: "Huruf kecil & tanda minus, contoh: neon-box" }) +
           "</div></details>";
       }).join("") + '<button type="button" class="add" data-add="PRODUCTS">+ Tambah produk</button>';
     }
     function panelPortfolio() {
-      return D.PORTFOLIO.map((w, i) => {
+      return '<div class="upbar"><label class="btn-up">＋ Tambah foto karya<input type="file" accept="image/*" multiple data-upload="PORTFOLIO" /></label><small>Bisa pilih banyak foto sekaligus. Otomatis dikecilkan, proporsional, dan data lokasi (EXIF) dihapus.</small></div>' +
+        D.PORTFOLIO.map((w, i) => {
         const b = "PORTFOLIO." + i;
         const size = w.featured ? "featured" : w.wide ? "wide" : "normal";
         return '<details class="card"' + (openCards.has(b) ? " open" : "") + ' data-card="' + b + '"><summary><span class="num">' + (i + 1) + '</span><span class="ttl">' + esc(w.title || "(tanpa judul)") + '</span><span class="meta">' + esc(w.category || "") + "</span>" + listControls("PORTFOLIO", i, D.PORTFOLIO.length) + "</summary>" +
-          '<div class="body"><div class="f">' + thumb(w.image) + "</div><div class=\"f\" style=\"gap:12px\">" +
+          '<div class="body"><div class="f"><div class="thumb-wrap">' + thumb(w.thumb || w.image) + '<label class="swap">📷 Ganti foto<input type="file" accept="image/*" data-replace="PORTFOLIO|' + i + '" /></label></div></div><div class="f" style="gap:12px">' +
           fText(b + ".title", "Judul") + fSelect(b + ".category", "Kategori", CATS) + fText(b + ".place", "Lokasi / jenis tempat") + "</div>" +
-          fText(b + ".image", "File foto (sesudah)", { full: true, help: "Contoh: assets/img/portfolio/p1.jpg" }) +
+          '<div class="f full"><label>File foto' + pendBadge(w.image) + '</label><input type="text" data-path="' + b + '.image" value="' + esc(w.image) + '" /><small>Terisi otomatis saat upload.' + (w.ratio ? ' <span class="ratio">Rasio ' + esc(w.ratio) + " (proporsional otomatis)</span>" : "") + "</small></div>" +
           fText(b + ".before", "File foto sebelum (opsional)", { full: true, help: "Kalau diisi, muncul tombol Sebelum/Sesudah di lightbox." }) +
-          '<div class="f full"><label>Ukuran kartu</label><div class="radios">' +
+          (w.ratio ? "" : '<div class="f full"><label>Ukuran kartu</label><div class="radios">' +
           [["normal", "Biasa"], ["wide", "Lebar"], ["featured", "Besar"]].map(([v, l]) => '<label><input type="radio" name="sz' + i + '" data-size="' + i + '" value="' + v + '"' + (size === v ? " checked" : "") + " /> " + l + "</label>").join("") +
-          "</div></div></div></details>";
+          "</div></div>") + "</div></details>";
       }).join("") + '<button type="button" class="add" data-add="PORTFOLIO">+ Tambah karya</button>';
     }
     function panelSimple(coll, fields, titleKey) {
@@ -236,6 +282,40 @@
       }).join("") + '<button type="button" class="add" data-add="' + coll + '">+ Tambah</button>';
     }
 
+    const GHK = "armada-gh";
+    function ghCfg() {
+      const def = { owner: "azkinadeco", repo: "armada_advertising", branch: "main", token: "" };
+      try { return Object.assign(def, JSON.parse(localStorage.getItem(GHK) || sessionStorage.getItem(GHK) || "null") || {}); } catch (e) { return def; }
+    }
+    function saveGh(cfg, remember) {
+      const v = JSON.stringify(cfg);
+      try {
+        if (remember) { localStorage.setItem(GHK, v); sessionStorage.setItem(GHK, ""); }
+        else { sessionStorage.setItem(GHK, v); localStorage.setItem(GHK, ""); }
+      } catch (e) {}
+    }
+    let lastResult = "";
+    function panelPublish() {
+      const c = ghCfg();
+      const remembered = (() => { try { return !!localStorage.getItem(GHK); } catch (e) { return false; } })();
+      return '<div class="card"><div class="body">' +
+        '<div class="f full"><label>Terbitkan langsung ke GitHub</label><ol class="steps-gh">' +
+        '<li>Buka <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">pembuatan Fine-grained token</a>.</li>' +
+        "<li>Repository access: <b>Only select repositories</b> → pilih repo website ini.</li>" +
+        "<li>Permissions → Repository → <b>Contents: Read and write</b>. Buat token, lalu salin.</li>" +
+        "<li>Tempel di bawah, klik <b>Tes koneksi</b>, lalu <b>🚀 Terbitkan</b>.</li></ol></div>" +
+        '<div class="f"><label>Pemilik (owner)</label><input type="text" data-gh="owner" value="' + esc(c.owner) + '" /></div>' +
+        '<div class="f"><label>Repo</label><input type="text" data-gh="repo" value="' + esc(c.repo) + '" /></div>' +
+        '<div class="f"><label>Branch</label><input type="text" data-gh="branch" value="' + esc(c.branch) + '" /></div>' +
+        '<div class="f"><label>Token</label><input type="password" data-gh="token" value="' + esc(c.token) + '" placeholder="github_pat_…" autocomplete="off" /></div>' +
+        '<label class="chk f full"><input type="checkbox" id="ghRemember"' + (remembered ? " checked" : "") + " /> Ingat token di perangkat ini (jangan centang di komputer umum)</label>" +
+        '<div class="f full" style="flex-direction:row;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-s" id="ghTest">Tes koneksi</button><button type="button" class="btn btn-y" id="ghPublish2">🚀 Terbitkan sekarang</button>' +
+        (PENDING.size ? '<button type="button" class="btn btn-s" id="dlPhotos">⬇ Unduh ' + PENDING.size + " foto baru</button>" : "") + "</div>" +
+        '<div class="f full"><small>' + (PENDING.size ? PENDING.size + " file foto menunggu diterbitkan. Jangan tutup halaman ini sebelum terbit." : "Tidak ada foto yang menunggu.") + "</small></div>" +
+        '<div class="f full" id="ghResult">' + lastResult + "</div>" +
+        "</div></div>";
+    }
+
     const TABS = [
       ["site", "Info Usaha", () => panelSite(), null],
       ["products", "Produk", () => panelProducts(), "PRODUCTS"],
@@ -244,10 +324,11 @@
       ["faq", "FAQ", () => panelSimple("FAQ", (b) => fText(b + ".q", "Pertanyaan", { full: true }) + fArea(b + ".a", "Jawaban"), "q"), "FAQ"],
       ["testi", "Testimoni", () => '<div class="intro" style="margin-bottom:12px"><b>Testimoni asli dari klien</b><p style="margin:0">Section testimoni di website baru muncul kalau ada minimal 1 testimoni. Gunakan testimoni asli dan minta izin klien.</p></div>' +
         panelSimple("TESTIMONI", (b) => fText(b + ".name", "Nama") + fText(b + ".business", "Nama usaha") + fSelect(b + ".product", "Produk", [""].concat(D.PRODUCTS.map((p) => p.name))) + fSelect(b + ".rating", "Rating", [[5, "★★★★★"], [4, "★★★★"], [3, "★★★"]].map(([v, l]) => [String(v), l])) + fArea(b + ".text", "Isi testimoni"), "name"), "TESTIMONI"],
+      ["publish", "🚀 Terbitkan", () => panelPublish(), null],
     ];
     const DEFAULTS = {
       PRODUCTS: () => ({ id: "produk-baru-" + Date.now().toString(36).slice(-4), category: "Neon Box", name: "Produk Baru", tagline: "", icon: "box", image: "", desc: "", specs: [["Bahan", ""]], uses: [], startPrice: "", badge: "" }),
-      PORTFOLIO: () => ({ title: "Karya Baru", category: "Neon Box", place: "", image: "assets/img/portfolio/", before: "" }),
+      PORTFOLIO: () => ({ title: "Karya Baru", category: "Huruf Timbul", place: "", image: "", before: "" }),
       WHY: () => ({ icon: "pen", title: "", text: "" }),
       FAQ: () => ({ q: "", a: "" }),
       TESTIMONI: () => ({ name: "", business: "", text: "", rating: "5", product: "" }),
@@ -352,6 +433,172 @@
       if (sa) { getPath(sa.dataset.specAdd).push(["", ""]); save(); render(); return; }
       const sd = e.target.closest("[data-spec-del]");
       if (sd) { const [path, k] = sd.dataset.specDel.split("|"); getPath(path).splice(+k, 1); save(); render(); return; }
+    });
+
+    /* ---------- images: resize in the browser (also strips EXIF) ---------- */
+    const busy = (on, t) => { $("#busy").classList.toggle("on", !!on); if (t) $("#busyText").textContent = t; };
+    function loadImg(file) {
+      return new Promise((res, rej) => {
+        const url = URL.createObjectURL(file);
+        const im = new Image();
+        im.onload = () => res({ im, url });
+        im.onerror = () => { URL.revokeObjectURL(url); rej(new Error("Format foto tidak didukung")); };
+        im.src = url;
+      });
+    }
+    function resizeTo(im, max, q) {
+      const r = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+      const w = Math.round(im.naturalWidth * r), h = Math.round(im.naturalHeight * r);
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(im, 0, 0, w, h);
+      return new Promise((res) => cv.toBlob((blob) => res({ blob, w, h }), "image/jpeg", q));
+    }
+    function addPending(path, blob) {
+      const old = PENDING.get(path);
+      if (old) URL.revokeObjectURL(old.url);
+      PENDING.set(path, { blob, url: URL.createObjectURL(blob) });
+    }
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    async function photoEntry(file, folder, withThumb) {
+      const { im, url } = await loadImg(file);
+      const full = await resizeTo(im, 1600, 0.82);
+      const base = "assets/img/" + folder + "/u-" + uid();
+      addPending(base + ".jpg", full.blob);
+      let thumbPath = "";
+      if (withThumb) {
+        const sm = await resizeTo(im, 760, 0.78);
+        thumbPath = base + "-sm.jpg";
+        addPending(thumbPath, sm.blob);
+      }
+      URL.revokeObjectURL(url);
+      return { image: base + ".jpg", thumb: thumbPath, ratio: full.w + "/" + full.h };
+    }
+    document.addEventListener("change", async (e) => {
+      const el = e.target;
+      if (!el.files || !el.files.length || !(el.dataset.upload || el.dataset.replace)) return;
+      const files = [...el.files];
+      el.value = "";
+      try {
+        if (el.dataset.upload) {
+          const fresh = [];
+          for (let k = 0; k < files.length; k++) {
+            busy(true, "Memproses foto " + (k + 1) + "/" + files.length + "…");
+            const r = await photoEntry(files[k], "portfolio", true);
+            fresh.push({ title: "", category: CATS[0], place: "", image: r.image, thumb: r.thumb, ratio: r.ratio });
+          }
+          D.PORTFOLIO.unshift(...fresh);
+          openCards.clear();
+          fresh.forEach((_, k) => openCards.add("PORTFOLIO." + k));
+          toast(fresh.length + " foto ditambahkan — isi judul & kategorinya");
+        } else {
+          const [coll, i] = el.dataset.replace.split("|");
+          busy(true, "Memproses foto…");
+          const r = await photoEntry(files[0], coll === "PRODUCTS" ? "products" : "portfolio", coll === "PORTFOLIO");
+          const it = D[coll][+i];
+          it.image = r.image;
+          if (coll === "PORTFOLIO") { it.thumb = r.thumb; it.ratio = r.ratio; delete it.featured; delete it.wide; }
+          openCards.add(coll + "." + i);
+          toast("Foto diganti");
+        }
+        save(); saveBlobs(); render();
+      } catch (err) {
+        toast(err.message || "Gagal memproses foto");
+      } finally { busy(false); }
+    });
+    window.addEventListener("beforeunload", (e) => { if (PENDING.size) { e.preventDefault(); e.returnValue = ""; } });
+
+    /* ---------- GitHub publish (single commit: data.js + new photos) ---------- */
+    async function gh(path, opts) {
+      const c = ghCfg();
+      const o = opts || {};
+      const r = await fetch("https://api.github.com/repos/" + encodeURIComponent(c.owner) + "/" + encodeURIComponent(c.repo) + path, {
+        method: o.method || "GET",
+        headers: Object.assign({ Accept: "application/vnd.github+json", Authorization: "Bearer " + c.token, "X-GitHub-Api-Version": "2022-11-28" }, o.body ? { "Content-Type": "application/json" } : {}),
+        body: o.body ? JSON.stringify(o.body) : undefined,
+      });
+      if (!r.ok) {
+        let m = "";
+        try { m = (await r.json()).message || ""; } catch (e) {}
+        const hint = r.status === 401 ? "Token salah atau kedaluwarsa." : r.status === 403 ? "Token tidak punya izin Contents: Read and write." : r.status === 404 ? "Repo/branch tidak ditemukan, atau token tidak diberi akses ke repo ini." : r.status === 409 || r.status === 422 ? "Repo berubah saat proses — coba Terbitkan lagi." : "";
+        throw new Error("GitHub " + r.status + (m ? " · " + m : "") + (hint ? " — " + hint : ""));
+      }
+      return r.status === 204 ? null : r.json();
+    }
+    const b64Blob = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
+    const b64Text = (t) => { const bytes = new TextEncoder().encode(t); let bin = ""; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); };
+    const showResult = (html) => { lastResult = html; const el = $("#ghResult"); if (el) el.innerHTML = html; };
+    async function publish() {
+      const c = ghCfg();
+      if (!c.token) { current = "publish"; render(); toast("Isi token GitHub dulu (sekali saja)"); return; }
+      const photos = PENDING.size;
+      if (!confirm("Terbitkan perubahan" + (photos ? " dan " + photos + " file foto" : "") + " ke " + c.owner + "/" + c.repo + " (" + c.branch + ")?")) return;
+      try {
+        busy(true, "Menghubungkan ke GitHub…");
+        const ref = await gh("/git/ref/heads/" + encodeURIComponent(c.branch));
+        const baseSha = ref.object.sha;
+        const baseCommit = await gh("/git/commits/" + baseSha);
+        const files = [{ path: "assets/js/data.js", get: async () => b64Text(buildFile()) }];
+        PENDING.forEach((v, path) => files.push({ path, get: () => b64Blob(v.blob) }));
+        const tree = [];
+        for (let k = 0; k < files.length; k++) {
+          busy(true, "Mengunggah " + (k + 1) + "/" + files.length + "…");
+          const blob = await gh("/git/blobs", { method: "POST", body: { content: await files[k].get(), encoding: "base64" } });
+          tree.push({ path: files[k].path, mode: "100644", type: "blob", sha: blob.sha });
+        }
+        busy(true, "Menyimpan commit…");
+        const t = await gh("/git/trees", { method: "POST", body: { base_tree: baseCommit.tree.sha, tree } });
+        const msg = "Update konten website lewat Panel Pengaturan" + (photos ? " (+" + photos + " file foto)" : "");
+        const cm = await gh("/git/commits", { method: "POST", body: { message: msg, tree: t.sha, parents: [baseSha] } });
+        await gh("/git/refs/heads/" + encodeURIComponent(c.branch), { method: "PATCH", body: { sha: cm.sha } });
+        PENDING.forEach((v) => URL.revokeObjectURL(v.url));
+        PENDING.clear();
+        saveBlobs();
+        save();
+        showResult('<div class="res ok">✓ Terbit! Commit <a href="' + esc(cm.html_url || "#") + '" target="_blank" rel="noopener">' + esc(cm.sha.slice(0, 7)) + "</a>. Website yang di-hosting dari repo ini akan ter-update dalam beberapa menit.</div>");
+        toast("Terbit ✓");
+        render();
+      } catch (err) {
+        showResult('<div class="res err">✕ ' + esc(err.message) + "</div>");
+        if (current !== "publish") { current = "publish"; render(); }
+        toast("Gagal terbit — lihat keterangan");
+      } finally { busy(false); }
+    }
+    $("#pubBtn").addEventListener("click", publish);
+    document.addEventListener("click", async (e) => {
+      if (e.target.closest("#ghPublish2")) return publish();
+      if (e.target.closest("#ghTest")) {
+        try {
+          busy(true, "Mengecek koneksi…");
+          const r = await gh("");
+          const canWrite = r.permissions ? r.permissions.push : null;
+          showResult('<div class="res ' + (canWrite === false ? "err" : "ok") + '">' + (canWrite === false ? "✕ Terhubung, tapi token tidak punya akses tulis." : "✓ Terhubung ke " + esc(r.full_name) + (canWrite ? " · akses tulis aktif" : "")) + "</div>");
+        } catch (err) { showResult('<div class="res err">✕ ' + esc(err.message) + "</div>"); }
+        finally { busy(false); }
+      }
+      if (e.target.closest("#dlPhotos")) {
+        let k = 0;
+        PENDING.forEach((v, path) => {
+          setTimeout(() => { const a = document.createElement("a"); a.href = v.url; a.download = path.split("/").pop(); a.style.display = "none"; document.body.appendChild(a); a.click(); a.remove(); }, 300 * k++);
+        });
+        toast("Simpan file ke folder assets/img/… sesuai nama di kolom File foto");
+      }
+    });
+    document.addEventListener("input", (e) => {
+      const g = e.target.dataset && e.target.dataset.gh;
+      if (!g) return;
+      const c = ghCfg();
+      c[g] = e.target.value.trim();
+      saveGh(c, !!($("#ghRemember") || {}).checked);
+    });
+    document.addEventListener("change", (e) => {
+      if (e.target.id !== "ghRemember") return;
+      saveGh(ghCfg(), e.target.checked);
+      toast(e.target.checked ? "Token diingat di perangkat ini" : "Token hanya disimpan sampai tab ditutup");
+    });
+    $("#previewBtn").addEventListener("click", () => {
+      save(); saveBlobs();
+      window.open("index.html?preview=1", "_blank");
     });
 
     /* ---------- output ---------- */

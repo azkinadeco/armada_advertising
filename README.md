@@ -68,20 +68,27 @@ robots.txt, sitemap.xml → SEO (ganti domain!)
 - Notifikasi offline/online, pemberitahuan "Versi baru tersedia", dan header yang mengecil saat scroll
 - Lolos audit aksesibilitas axe-core (desktop & HP)
 
-## Cara termudah mengedit data: Panel Admin
-Buka **`admin.html`** di browser (misalnya `http://localhost:8080/admin.html`, atau `domainanda.com/admin.html` setelah online).
-1. Edit info usaha, produk, portofolio, keunggulan, FAQ, dan testimoni lewat form. Draf tersimpan otomatis di browser.
-2. Klik **Unduh data.js**.
-3. Ganti file `assets/js/data.js` dengan file hasil unduhan, lalu upload/push.
+## Cara termudah mengedit & update konten: ikon ⚙ (Panel Pengaturan)
+Klik ikon **⚙ di pojok kanan atas** website (atau buka `admin.html`).
+1. Edit info usaha, produk, portofolio, keunggulan, FAQ, dan testimoni lewat form. Draf tersimpan otomatis.
+2. **Tambah foto karya**: tab Portofolio → "＋ Tambah foto karya" (bisa banyak sekaligus). Foto otomatis dikecilkan (1600px + thumbnail 760px), rasionya dideteksi supaya kartu proporsional, dan data EXIF/lokasi dihapus. Foto produk bisa diganti dengan tombol "📷 Ganti foto".
+3. **👁 Pratinjau**: lihat hasilnya di website sebelum diterbitkan (hanya terlihat di browser kamu).
+4. **🚀 Terbitkan**: perubahan + foto baru dikirim ke GitHub sebagai 1 commit.
+   Pertama kali, buat *Fine-grained token* di GitHub (Repository access: repo ini saja, Permissions → Contents: Read and write), lalu tempel di tab "🚀 Terbitkan".
 
-Panel ini tidak menyimpan apa pun di server; ia hanya membuat file `data.js`. Kalau tidak ingin halaman ini ikut online, cukup jangan upload `admin.html`.
+Tanpa GitHub: klik **Unduh data.js** (dan "Unduh foto baru" di tab Terbitkan), lalu taruh file-file itu di folder yang sesuai.
+Panel ini tidak punya server: tanpa token GitHub, ia tidak bisa mengubah website siapa pun. Token hanya tersimpan di perangkat yang kamu pakai.
 
 ## Yang WAJIB diganti dulu
 Buka `assets/js/data.js`:
 - `whatsapp`: nomor WA, format `628xxxxxxxxxx` (tanpa + dan tanpa 0 di depan)
 - `address`, `hours`, dan `mapsUrl` (opsional)
 
-## Ganti foto portofolio
+## Foto portofolio
+35 foto karya asli sudah terpasang di `assets/img/portfolio/` (`NN-nama.jpg` + `NN-nama-sm.jpg`), dikelompokkan ke: Huruf Timbul, Neon Box, Indoor, Event, Neon Flex, Pylon, Billboard.
+Folder `porto image/` (foto asli dengan metadata EXIF/GPS) sengaja tidak ikut di-push (`.gitignore`).
+
+### Ganti foto portofolio secara manual
 1. Simpan foto dari Instagram (atau HP) ke `assets/img/portfolio/`, beri nama `p1.jpg`, `p2.jpg`, dst.
 2. Di `data.js` bagian `PORTFOLIO`, sesuaikan `title`, `category`, dan `place`.
 3. Foto yang belum ada otomatis tampil sebagai ilustrasi bertanda "Ilustrasi".

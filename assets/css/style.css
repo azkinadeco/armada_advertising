@@ -1560,3 +1560,34 @@ main { overflow-x: clip; }
 }
 .nudge-main span:last-child { white-space: nowrap; }
 @media (max-width: 640px) { .pd-nav [data-step] { display: none; } }
+
+/* =========================================================
+   BATCH 8 — real portfolio photos, settings gear, preview
+   ========================================================= */
+.photo-skel { position: absolute; inset: 0; display: block; background: linear-gradient(100deg, #191617 30%, #262122 50%, #191617 70%) 0 0 / 300% 100%; animation: shimmer 1.4s linear infinite; }
+.gallery .work.has-ratio { grid-column: auto; grid-row: auto; }
+.work-media img { transition: opacity 0.6s ease, transform 0.7s var(--ease); }
+.pv-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pc-vis img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* lightbox follows the photo's own proportions */
+.lb-media { --r: 1.6; aspect-ratio: var(--r); width: min(100%, calc(70svh * var(--r))); max-height: none; margin: 0 auto; }
+.lb-cap { width: 100%; }
+
+/* settings gear */
+.header-gear { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); transition: color 0.2s, border-color 0.2s, background 0.2s; }
+.header-gear .i { width: 19px; height: 19px; transition: transform 0.6s var(--ease); }
+.header-gear:hover { color: var(--yellow); border-color: rgba(245, 228, 0, 0.4); }
+.header-gear:hover .i { transform: rotate(90deg); }
+
+/* preview banner */
+.preview-bar { position: fixed; left: 50%; top: 12px; z-index: 140; display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; border-radius: 999px; background: var(--yellow); color: var(--ink); font-size: 0.8rem; font-weight: 600; transform: translateX(-50%); box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.6); white-space: nowrap; }
+.preview-bar a { padding: 6px 12px; border-radius: 999px; background: var(--ink); color: var(--yellow); font-weight: 800; }
+
+@media (max-width: 640px) {
+  .lb-media { width: min(100%, calc(64svh * var(--r))); }
+  .header-gear { width: 40px; height: 40px; border: 0; background: rgba(255, 255, 255, 0.07); color: var(--text); }
+  .header-inner { gap: 8px; }
+  .preview-bar { top: auto; bottom: calc(92px + env(safe-area-inset-bottom)); font-size: 0.72rem; }
+  .preview-bar span { overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
+}
